@@ -1,101 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sr">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Upravljanje Rezervacijama</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <link rel="stylesheet" href="../../__bootstrap_packages/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="../../__bootstrap_packages/css/bootstrap.min.css"
+    />
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/pages/center/dashboard-center.html"
+          >SportBook - Center Panel</a
+        >
+        <a href="/pages/index/index.html" class="btn btn-outline-light btn-sm"
+          >Nazad na početnu</a
+        >
+      </div>
+    </nav>
 
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/pages/center/dashboard-center.html">SportBook - Center Panel</a>
-        <a href="/pages/index/index.html" class="btn btn-outline-light btn-sm">Nazad na početnu</a>
-    </div>
-</nav>
+    <div class="container mt-5">
+      <h2 class="mb-4">Upravljanje Rezervacijama</h2>
 
-<div class="container mt-5">
-
-    <h2 class="mb-4">Upravljanje Rezervacijama</h2>
-
-    <!-- Filter sekcija -->
-    <div class="card p-3 mb-4 shadow-sm">
+      <!-- Filter sekcija -->
+      <div class="card p-3 mb-4 shadow-sm">
         <div class="row">
-            <div class="col-md-4">
-                <input type="date" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <select class="form-select">
-                    <option>Svi statusi</option>
-                    <option>Pending</option>
-                    <option>Approved</option>
-                    <option>Cancelled</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-primary w-100">Filtriraj</button>
-            </div>
+          <div class="col-md-4">
+            <input type="date" class="form-control" />
+          </div>
+          <div class="col-md-4">
+            <select class="form-select">
+              <option>Svi statusi</option>
+              <option>Pending</option>
+              <option>Approved</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary w-100">Filtriraj</button>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- Tabela rezervacija -->
-    <div class="card shadow">
+      <!-- Tabela rezervacija -->
+      <div class="card shadow">
         <div class="card-body">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Korisnik</th>
-                        <th>Email</th>
-                        <th>Datum</th>
-                        <th>Vreme</th>
-                        <th>Sport</th>
-                        <th>Status</th>
-                        <th>Akcija</th>
-                    </tr>
-                </thead>
-                <tbody>
+          <table class="table table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Korisnik</th>
+                <th>Email</th>
+                <th>Datum</th>
+                <th>Vreme</th>
+                <th>Sport</th>
+                <th>Status</th>
+                <th>Akcija</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Marko Marković</td>
+                <td>marko@email.com</td>
+                <td>20.05.2025</td>
+                <td>18:00</td>
+                <td>Fudbal</td>
+                <td><span class="badge bg-warning text-dark">Pending</span></td>
+                <td>
+                  <button class="btn btn-success btn-sm me-2">Odobri</button>
+                  <button class="btn btn-danger btn-sm">Otkaži</button>
+                </td>
+              </tr>
 
-                    <tr>
-                        <td>Marko Marković</td>
-                        <td>marko@email.com</td>
-                        <td>20.05.2025</td>
-                        <td>18:00</td>
-                        <td>Fudbal</td>
-                        <td><span class="badge bg-warning text-dark">Pending</span></td>
-                        <td>
-                            <button class="btn btn-success btn-sm me-2">Odobri</button>
-                            <button class="btn btn-danger btn-sm">Otkaži</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>Petar Petrović</td>
-                        <td>petar@email.com</td>
-                        <td>21.05.2025</td>
-                        <td>20:00</td>
-                        <td>Košarka</td>
-                        <td><span class="badge bg-success">Approved</span></td>
-                        <td>
-                            <button class="btn btn-secondary btn-sm" disabled>Završeno</button>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
+              <tr>
+                <td>Petar Petrović</td>
+                <td>petar@email.com</td>
+                <td>21.05.2025</td>
+                <td>20:00</td>
+                <td>Košarka</td>
+                <td><span class="badge bg-success">Approved</span></td>
+                <td>
+                  <button class="btn btn-secondary btn-sm" disabled>
+                    Završeno
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
 
-</div>
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+      © 2025 SportBook
+    </footer>
 
-<footer class="bg-dark text-white text-center py-3 mt-5">
-    © 2025 SportBook
-</footer>
-
-<script src="assets/js/main.js"></script>
-
-</body>
+    <script src="assets/js/main.js"></script>
+  </body>
 </html>
