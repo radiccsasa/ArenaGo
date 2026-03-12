@@ -10,7 +10,6 @@
     />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="assets/css/style.css" />
   </head>
   <body>
     <nav class="navbar navbar-dark bg-dark">
@@ -26,18 +25,18 @@
           <form id="loginForm">
             <div class="mb-3">
               <label>Email</label>
-              <input type="email" class="form-control" required />
+              <input id="email" type="email" class="form-control" required />
             </div>
             <div class="mb-3">
               <label>Lozinka</label>
-              <input type="password" class="form-control" required />
+              <input id="password" type="password" class="form-control" required />
             </div>
-            <button class="btn btn-primary w-100">Prijava</button>
+            <button type="button" id="loginBtn" class="btn btn-primary w-100">Prijava</button>
           </form>
         </div>
       </div>
     </div>
 
-    <script src="assets/js/main.js"></script>
+    <script src="login.js"></script>
   </body>
 </html>
