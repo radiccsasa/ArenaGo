@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 require_once "../DB/db.config.php";
 $method = $_POST['methodName'];
@@ -10,6 +11,7 @@ function register() {
     $password = $_POST['password'];
     $name = $_POST['name'];
     $role = $_POST['role'];
+    
 
     // hash passworda
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
@@ -18,10 +20,19 @@ function register() {
               VALUES ('$email', '$hashedPassword', '$name', '$role', 'active')";
 
     if (mysqli_query($conn, $query)) {
-        echo json_encode(["status" => "success"]);
-    } else {
-        echo json_encode(["status" => "error"]);
+
+    $_SESSION['user'] = [
+        "email" => $email,
+        "name" => $name,
+        "role" => $role
+    ];
+
+    echo json_encode([
+        "status" => "success",
+        "user" => $_SESSION['user']
+    ]);
     }
+
 }
 
 function login() {
@@ -36,21 +47,31 @@ function login() {
         $user = mysqli_fetch_assoc($result);
 
         if (password_verify($password, $user['password'])) {
+
+        $_SESSION['user'] = [
+            "id" => $user['id'],
+            "email" => $user['email'],
+            "name" => $user['name'],
+            "role" => $user['role']
+        ];
+
+        echo json_encode([
+            "status" => "success",
+            "user" => $_SESSION['user']
+        ]);
+    }
+    else {
+
             echo json_encode([
-                "status" => "success",
-                "user" => [
-                    "id" => $user['id'],
-                    "email" => $user['email'],
-                    "name" => $user['name'],
-                    "role" => $user['role']
-                ]
+                "status" => "error",
+                "message" => "Wrong password"
             ]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "Wrong password"]);
-        }
+            }
     } else {
         echo json_encode(["status" => "error", "message" => "User not found"]);
     }
+
+    
 }
 
 

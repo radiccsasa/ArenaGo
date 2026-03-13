@@ -3,7 +3,7 @@ $("#loginBtn").click(function() {
     let email= $("#email").val();
     let password= $("#password").val();
 
-    console.log("abbbbbbbbbbb");
+    console.log("ccccbbbbb");
     $.ajax({
     url: "../../api/userApi.php",
     method: "POST",
@@ -12,10 +12,20 @@ $("#loginBtn").click(function() {
         email:email,
         methodName:"login"
     },
-    success: function(response) {
 
-        console.log(response.user);
 
+
+    
+    success:function(response){
+
+    if(response.user.role == "center"){
+        window.location.href = "../center/dashboard-center.html";
     }
+
+    else{
+        window.location.href = "../user/dashboard-user.html";
+    }
+
+}
 });
 });

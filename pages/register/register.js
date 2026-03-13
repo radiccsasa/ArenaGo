@@ -16,10 +16,19 @@ $("#regBtn").click(function() {
         role:role,
         methodName:"register"
     },
-    success: function(response) {
+    success:function(response){
+        
+    if(response.status == "success"){
 
-        console.log(response.status);
+    if(response.user.role.trim() == "center"){
+        window.location.href = "../center/dashboard-center.html";
+    }
+    else{
+       window.location.href = "../user/dashboard-user.html";
+    }
 
     }
+
+}
 });
 });
