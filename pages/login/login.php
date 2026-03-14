@@ -12,11 +12,7 @@
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
   </head>
   <body>
-    <nav class="navbar navbar-dark bg-dark">
-      <div class="container">
-        <a class="navbar-brand" href="/pages/index/index.html">SportBook</a>
-      </div>
-    </nav>
+    <?php require_once '../../utils/nav.php'; ?>
 
     <div class="container mt-5">
       <div class="row justify-content-center">

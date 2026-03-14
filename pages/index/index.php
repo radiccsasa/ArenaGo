@@ -13,19 +13,8 @@
     <link rel="stylesheet" href="assets/css/style.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <a class="navbar-brand" href="/pages/index/index.html">SportBook</a>
-        <div>
-          <a href="/pages/login/login.html" class="btn btn-outline-light me-2"
-            >Prijava</a
-          >
-          <a href="/pages/register/register.html" class="btn btn-success"
-            >Registracija</a
-          >
-        </div>
-      </div>
-    </nav>
+
+  <?php require_once '../../utils/nav.php'; ?>
 
     <header class="hero-section text-white text-center">
       <div class="container py-5">
@@ -37,9 +26,7 @@
       </div>
     </header>
 
-    <footer class="bg-dark text-white text-center py-3">
-      © 2025 SportBook
-    </footer>
+    <?php require_once '../../utils/footer.php'; ?>
 
     <script src="/pages/assets/js/main.js"></script>
   </body>
