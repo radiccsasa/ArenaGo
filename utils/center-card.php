@@ -33,7 +33,7 @@ function renderCenterCard($center) {
                     <small class="text-muted ms-2">(<?php echo number_format($rating, 1); ?>)</small>
                 </div>
                 
-                <a href="center.php?id=<?php echo $center['id'] ?? 0; ?>" class="btn btn-outline-primary w-100">
+                <a href="/ArenaGo/pages/centers/centers-profile.php?id=<?php echo $center['id'] ?? 0; ?>" class="btn btn-outline-primary w-100">
                     <i class="bi bi-info-circle"></i> Detaljnije
                 </a>
             </div>
