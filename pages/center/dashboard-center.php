@@ -1,3 +1,5 @@
+<?php ?>
+
 <!doctype html>
 <html lang="sr">
 <head>
@@ -19,7 +21,7 @@
 
 <div class="card p-4 mt-4">
 
-<h4>Kreiranje profila centra</h4>
+<h4 id="headerForm"></h4>
 
 <input id="name" class="form-control mb-2" placeholder="Naziv centra">
 
@@ -31,7 +33,7 @@
 
 <input id="longitude" class="form-control mb-2" placeholder="Longitude">
 
-<button id="saveCenter" class="btn btn-success">
+<button id="saveCenter" type="button" class="btn btn-success">
 Sačuvaj centar
 </button>
 
@@ -43,10 +45,6 @@ Sačuvaj centar
 Dodaj termin
 </a>
 
-<a href="../reservations/manage-reservations.html" class="btn btn-primary">
-Upravljaj rezervacijama
-</a>
-
 </div>
 
 <div class="card p-4 mt-4">
@@ -54,12 +52,57 @@ Upravljaj rezervacijama
 <h4>Statistika</h4>
 
 <div id="stats"></div>
+<div class="card p-4 mt-4">
+  <h4>Zahtevi za rezervacije</h4>
+  
+  <!-- Filter za pretragu (opciono) -->
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" id="searchReservation" class="form-control" placeholder="Pretraži po korisniku...">
+    </div>
+    <div class="col-md-3">
+      <select id="filterStatus" class="form-select">
+        <option value="">Svi statusi</option>
+        <option value="pending">Na čekanju</option>
+        <option value="approved">Odobreno</option>
+        <option value="rejected">Odbijeno</option>
+      </select>
+    </div>
+  </div>
 
+  <!-- Tabela rezervacija -->
+  <div class="table-responsive">
+    <table class="table table-hover" id="reservationsTable">
+      <thead class="table-dark">
+        <tr>
+          <th>Korisnik</th>
+          <th>Sport</th>
+          <th>Datum</th>
+          <th>Vreme</th>
+          <th>Cena</th>
+          <th>Popust</th>
+          <th>Ukupno</th>
+          <th>Status</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="reservationsBody">
+        <!-- AJAX će učitati podatke ovde -->
+        <tr>
+          <td colspan="9" class="text-center">Učitavanje rezervacija...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 </div>
 
-<script src="dashboard-centers.js"></script>
+</div>
+
+
+
+<script src="dashboard-center.js"></script>
 
 </body>
 </html>
