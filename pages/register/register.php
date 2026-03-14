@@ -1,4 +1,23 @@
+
 <!doctype html>
+<?php
+session_start();
+
+if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
+    switch($_SESSION['user']['role']) {
+        case 'admin':
+            header('Location: /ArenaGo/pages/admin/dashboard-admin.php');
+            break;
+        case 'center':
+            header('Location: /ArenaGo/pages/center/dashboard-center.php');
+            break;
+        default:
+            header('Location: /ArenaGo/pages/index/index.php');
+    }
+    exit();
+}
+
+?>
 <html lang="sr">
   <head>
     <meta charset="UTF-8" />
