@@ -2,10 +2,10 @@
     <div class="container">
         <a class="navbar-brand" href="/pages/index/index.html">SportBook</a>
         <div>
-          <a href="/pages/login/login.html" class="btn btn-outline-light me-2"
+          <a href="/ArenaGo/pages/login/login.php" class="btn btn-outline-light me-2"
             >Prijava</a
           >
-          <a href="/pages/register/register.html" class="btn btn-success"
+          <a href="/ArenaGo/pages/register/register.php" class="btn btn-success"
             >Registracija</a
           >
         </div>

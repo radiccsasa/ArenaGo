@@ -19,11 +19,11 @@ $("#loginBtn").click(function() {
     success:function(response){
 
     if(response.user.role == "center"){
-        window.location.href = "../center/dashboard-center.html";
+        window.location.href = "../center/dashboard-center.php";
     }
 
     else{
-        window.location.href = "../user/dashboard-user.html";
+        window.location.href = "../user/dashboard-user.php";
     }
 
 }

@@ -20,7 +20,7 @@
       <div class="container py-5">
         <h1 class="display-4">Online rezervacija sportskih termina</h1>
         <p class="lead">Fudbal, košarka, teretana, bazen i još mnogo toga</p>
-        <a href="/pages/centers/centers.html" class="btn btn-light btn-lg"
+        <a href="/ArenaGo/pages/centers/centers.php" class="btn btn-light btn-lg"
           >Pregled centara</a
         >
       </div>

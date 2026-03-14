@@ -18,9 +18,9 @@ $("#regBtn").click(function () {
     success: function (response) {
       if (response.status == "success") {
         if (response.user.role.trim() == "center") {
-          window.location.href = "../center/dashboard-center.html";
+          window.location.href = "../center/dashboard-center.php";
         } else {
-          window.location.href = "../user/dashboard-user.html";
+          window.location.href = "../user/dashboard-user.php";
         }
       }
     },

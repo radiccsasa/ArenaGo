@@ -33,7 +33,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
   <body>
     <nav class="navbar navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="/pages/index/index.html">SportBook</a>
+        <a class="navbar-brand" href="/pages/index/index.php">SportBook</a>
       </div>
     </nav>
 
