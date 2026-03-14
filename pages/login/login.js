@@ -3,7 +3,6 @@ $("#loginBtn").click(function() {
     let email= $("#email").val();
     let password= $("#password").val();
 
-    console.log("ccccbbbbb");
     $.ajax({
     url: "../../api/userApi.php",
     method: "POST",

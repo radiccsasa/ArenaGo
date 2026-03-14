@@ -59,7 +59,7 @@ Upravljaj rezervacijama
 
 </div>
 
-<script src="dashboard-centers.js"></script>
+<script src="dashboard-center.js"></script>
 
 </body>
 </html>
