@@ -115,7 +115,7 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
                         <?php elseif($_SESSION['user']['role'] == 'user'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/ArenaGo/pages/user/dashboard-user.php">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                    <i class="bi bi-speedometer2"></i> Profil
                                 </a>
                             </li>
                         <?php endif; ?>
