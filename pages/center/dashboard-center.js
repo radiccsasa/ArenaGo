@@ -361,12 +361,16 @@ function displayTermsGrid(terms) {
           
           <div class="card-footer bg-transparent">
             <div class="d-flex justify-content-between">
-              <a href="/ArenaGo/pages/add-term/add-term.php?id=${term.id}" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-pencil"></i> Izmeni
-              </a>
-              <a href="/ArenaGo/api/removeTerm.php?termId=${term.id}" class="btn btn-sm btn-outline-danger delete-term" data-id="${term.id}">
+            <a href="/ArenaGo/api/removeTerm.php?termId=${term.id}" class="btn btn-sm btn-outline-danger delete-term" data-id="${term.id}">
                 <i class="bi bi-trash"></i> Obriši
               </a>
+          ${
+            termDate < today
+              ? ""
+              : `<a href="/ArenaGo/pages/add-term/add-term.php?id=${term.id}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i> Izmeni
+              </a>`
+          }
             </div>
           </div>
         </div>
