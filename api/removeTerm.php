@@ -13,7 +13,7 @@ function deleteTerm()
     }
 
     $userId = $_SESSION['user']['id'];
-    $termId = isset($_GET['termId']);
+    $termId = $_GET['termId'];
 
     if ($termId == 0) {
         echo json_encode(['status' => 'error', 'message' => 'ID termina nije prosleđen']);
