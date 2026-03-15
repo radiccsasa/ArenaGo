@@ -14,7 +14,6 @@ if(!isset($_GET['id']) || empty($_GET['id'])) {
 
 $user_id = $_GET['id'];
 
-
 $user_query = "SELECT * FROM users WHERE id = ?";
 $stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $user_id);
@@ -25,7 +24,6 @@ if(!$user) {
     header("Location: users.php");
     exit();
 }
-
 
 $reservations_query = "
     SELECT r.*, t.date, t.time, t.price, sc.name as center_name, sc.id as center_id
@@ -96,6 +94,15 @@ $comments = $stmt->get_result();
                         <a href="users.php" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Nazad
                         </a>
+                        <?php if($user['status'] == 'active'): ?>
+                            <button class="btn btn-danger ms-2" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'block')">
+                                <i class="bi bi-ban"></i> Blokiraj
+                            </button>
+                        <?php else: ?>
+                            <button class="btn btn-success ms-2" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'unblock')">
+                                <i class="bi bi-check-circle"></i> Odblokiraj
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -182,6 +189,22 @@ $comments = $stmt->get_result();
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
     
     <script>
+    function toggleUserStatus(userId, action) {
+        if(confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovog korisnika?`)) {
+            $.ajax({
+                url: '../../api/admin/toggle-user-status.php',
+                method: 'POST',
+                data: { user_id: userId, action: action },
+                success: function(response) {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Došlo je do greške.');
+                }
+            });
+        }
+    }
+
     function deleteComment(commentId) {
         if(confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
             $.ajax({

@@ -154,10 +154,22 @@ $comments_result = $stmt->get_result();
                         <?php endif; ?>
                     </div>
                     <div class="col-md-4 text-end">
+                        <div class="mb-2">
+                            <?php if($center['user_status'] == 'active'): ?>
+                                <span class="badge bg-success p-3 fs-6 d-inline-block mb-2">Aktivan</span>
+                            <?php else: ?>
+                                <span class="badge bg-danger p-3 fs-6 d-inline-block mb-2">Blokiran</span>
+                            <?php endif; ?>
+                        </div>
+                        
                         <?php if($center['user_status'] == 'active'): ?>
-                            <span class="badge bg-success p-3 fs-6">Aktivan</span>
+                            <button class="btn btn-danger" onclick="toggleCenterStatus(<?php echo $center['user_id']; ?>, 'block')">
+                                <i class="bi bi-ban"></i> Blokiraj centar
+                            </button>
                         <?php else: ?>
-                            <span class="badge bg-danger p-3 fs-6">Blokiran</span>
+                            <button class="btn btn-success" onclick="toggleCenterStatus(<?php echo $center['user_id']; ?>, 'unblock')">
+                                <i class="bi bi-check-circle"></i> Odblokiraj centar
+                            </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -323,6 +335,22 @@ $comments_result = $stmt->get_result();
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
     
     <script>
+    function toggleCenterStatus(userId, action) {
+        if(confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovaj centar?`)) {
+            $.ajax({
+                url: '../../api/admin/toggle-user-status.php',
+                method: 'POST',
+                data: { user_id: userId, action: action },
+                success: function(response) {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Došlo je do greške.');
+                }
+            });
+        }
+    }
+
     function deleteComment(commentId) {
         if(confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
             $.ajax({

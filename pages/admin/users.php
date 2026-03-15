@@ -52,7 +52,7 @@ $users_result = $stmt->get_result();
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="dashboard-admin.php">
-                            <i class="bi bi-speedometer2"></i> Dashboard
+                            <i class="bi bi-speedometer2"></i> Profil
                         </a>
                     </li>
                     <li class="nav-item">
