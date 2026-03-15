@@ -1,67 +1,13 @@
-// $(document).ready(function () {
-//   loadSports();
-//   $("#addBtn").on("click", () => {
-//     const date = $("#date").val();
-//     const time = $("#time").val();
-//     const price = $("#price").val();
-//     const discount = $("#discount").val();
-//     const capacity = $("#capacity").val();
-//     const sport = $("#sportId").val();
-
-//     $.ajax({
-//       url: "../../api/termApi.php",
-//       method: "POST",
-//       data: {
-//         methodName: "addTerm",
-//         date: date,
-//         time: time,
-//         price: price,
-//         discount: discount,
-//         capacity: capacity,
-//         sport: sport,
-//       },
-//       dataType: "json",
-//       success: function (response) {
-//         console.log(response.status);
-//         location.href = "/ArenaGo/pages/center/dashboard-center.php";
-//       },
-//     });
-//   });
-// });
-
-// function loadSports() {
-//   $.ajax({
-//     url: "../../api/termApi.php",
-//     method: "POST",
-//     data: {
-//       methodName: "getSports",
-//     },
-//     success: function (response) {
-//       let options = '<option value="">Izaberi sport</option>';
-
-//       response.data.forEach(function (sport) {
-//         options += `<option value="${sport.id}">${sport.name}</option>`;
-//       });
-
-//       $("#sportId").html(options);
-//     },
-//   });
-// }
-
 $(document).ready(function () {
-  // Učitaj sportove
   loadSports();
 
-  // Proveri da li je edit mod
   const mode = $("#mode").val();
   const termId = $("#termId").val();
 
   if (mode === "edit" && termId) {
-    // Učitaj podatke termina za izmenu
     loadTermData(termId);
   }
 
-  // Na klik dugmeta
   $("#saveBtn").on("click", function () {
     const mode = $("#mode").val();
 
@@ -73,7 +19,6 @@ $(document).ready(function () {
   });
 });
 
-// Funkcija za dodavanje termina
 function addTerm() {
   const date = $("#date").val();
   const time = $("#time").val();
@@ -82,9 +27,8 @@ function addTerm() {
   const capacity = $("#capacity").val();
   const sport = $("#sportId").val();
 
-  // Validacija
   if (!date || !time || !price || !capacity || !sport) {
-    alert("Molimo popunite sva polja!");
+    showToast("Molimo popunite sva polja!", "warning");
     return;
   }
 
@@ -102,22 +46,22 @@ function addTerm() {
     },
     dataType: "json",
     success: function (response) {
-      console.log("Add response:", response);
       if (response.status === "success") {
-        alert("Termin uspešno dodat!");
+        showToast("Termin je uspesno dodat!", "success");
         window.location.href = "/ArenaGo/pages/center/dashboard-center.php";
       } else {
-        alert("Greška: " + (response.message || "Nepoznata greška"));
+        showToast(
+          "Greška: " + (response.message || "Nepoznata greška"),
+          "error",
+        );
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error adding term:", error);
-      alert("Došlo je do greške na serveru");
+      showToast("Došlo je do greške na serveru", "error");
     },
   });
 }
 
-// Funkcija za izmenu termina
 function updateTerm() {
   const termId = $("#termId").val();
   const date = $("#date").val();
@@ -127,9 +71,8 @@ function updateTerm() {
   const capacity = $("#capacity").val();
   const sport = $("#sportId").val();
 
-  // Validacija
   if (!date || !time || !price || !capacity || !sport) {
-    alert("Molimo popunite sva polja!");
+    showToast("Molimo popunite sva polja!", "warning");
     return;
   }
 
@@ -150,20 +93,21 @@ function updateTerm() {
     success: function (response) {
       console.log("Update response:", response);
       if (response.status === "success") {
-        alert("Termin uspešno ažuriran!");
+        showToast("Termin uspešno ažuriran!", success);
         window.location.href = "/ArenaGo/pages/center/dashboard-center.php";
       } else {
-        alert("Greška: " + (response.message || "Nepoznata greška"));
+        showToast(
+          "Greška: " + (response.message || "Nepoznata greška"),
+          "error",
+        );
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error updating term:", error);
-      alert("Došlo je do greške na serveru");
+      showToast("Došlo je do greške na serveru", "error");
     },
   });
 }
 
-// Funkcija za učitavanje sportova
 function loadSports() {
   $.ajax({
     url: "../../api/termApi.php",
@@ -173,8 +117,6 @@ function loadSports() {
     },
     dataType: "json",
     success: function (response) {
-      console.log("Sports response:", response);
-
       if (response.status === "success") {
         let options = '<option value="">Izaberi sport</option>';
 
@@ -184,16 +126,15 @@ function loadSports() {
 
         $("#sportId").html(options);
       } else {
-        console.error("Greška pri učitavanju sportova:", response.message);
+        showToast("Greska pri ucitavanju sportova", "error");
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error loading sports:", error);
+      showToast("Greska pri ucitavanju sportova", "error");
     },
   });
 }
 
-// Funkcija za učitavanje podataka termina (za izmenu)
 function loadTermData(termId) {
   $.ajax({
     url: "../../api/termApi.php",
@@ -204,8 +145,6 @@ function loadTermData(termId) {
     },
     dataType: "json",
     success: function (response) {
-      console.log("Term data response:", response);
-
       if (response.status === "success") {
         const term = response.data;
 
@@ -217,13 +156,15 @@ function loadTermData(termId) {
         $("#capacity").val(term.capacity);
         $("#sportId").val(term.sport_id);
       } else {
-        alert("Greška pri učitavanju termina: " + response.message);
+        showToast(
+          "Greška pri učitavanju termina: " + response.message,
+          "error",
+        );
         window.location.href = "dashboard-center.php";
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error loading term data:", error);
-      alert("Došlo je do greške pri učitavanju podataka");
+      showToast("Došlo je do greške pri učitavanju podataka", "error");
       window.location.href = "dashboard-center.php";
     },
   });

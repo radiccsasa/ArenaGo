@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8" />
     <title>Prijava - ArenaGo</title>
@@ -9,14 +10,16 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
 </head>
+
 <body class="bg-light">
-    <?php require_once '../../utils/header-user.php'; ?>
+    <?php require_once "../../utils/toast/toast.php";
+    require_once '../../utils/header-user.php';  ?>
 
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <div id="notificationArea"></div>
-                
+
                 <div class="card shadow-lg border-0">
                     <div class="card-header bg-primary text-white text-center py-3">
                         <i class="bi bi-box-arrow-in-right fs-1"></i>
@@ -40,10 +43,10 @@
                                 <i class="bi bi-box-arrow-in-right"></i> Prijava
                             </button>
                         </form>
-                        
+
                         <div class="text-center mt-4">
                             <p class="text-muted">
-                                Nemate nalog? 
+                                Nemate nalog?
                                 <a href="../register/register.php" class="text-primary text-decoration-none">
                                     Registrujte se <i class="bi bi-arrow-right"></i>
                                 </a>
@@ -57,4 +60,5 @@
 
     <script src="login.js?v=2"></script>
 </body>
+
 </html>

@@ -1,8 +1,10 @@
 <?php
 session_start();
 require_once "../../DB/db.config.php";
+require_once "../../utils/toast/toast.php";
 
-if(!isset($_SESSION['user']['id']) || $_SESSION['user']['role'] != 'user') {
+
+if (!isset($_SESSION['user']['id']) || $_SESSION['user']['role'] != 'user') {
     header("Location: /ArenaGo/pages/login/login.php");
     exit();
 }
@@ -12,16 +14,16 @@ $message = '';
 $message_type = '';
 
 // Procesiranje forme za ažuriranje profila
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if(isset($_POST['update_profile'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['update_profile'])) {
         $new_name = trim($_POST['name']);
-        
-        if(!empty($new_name)) {
+
+        if (!empty($new_name)) {
             $update_query = "UPDATE users SET name = ? WHERE id = ?";
             $stmt = $conn->prepare($update_query);
             $stmt->bind_param("si", $new_name, $user_id);
-            
-            if($stmt->execute()) {
+
+            if ($stmt->execute()) {
                 $_SESSION['user']['name'] = $new_name;
                 $message = "Ime je uspešno ažurirano!";
                 $message_type = "success";
@@ -31,12 +33,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
     }
-    
-    if(isset($_POST['change_password'])) {
+
+    if (isset($_POST['change_password'])) {
         $current_password = $_POST['current_password'];
         $new_password = $_POST['new_password'];
         $confirm_password = $_POST['confirm_password'];
-        
+
         // Proveri trenutnu šifru
         $password_query = "SELECT password FROM users WHERE id = ?";
         $stmt = $conn->prepare($password_query);
@@ -44,16 +46,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
         $result = $stmt->get_result();
         $user_data = $result->fetch_assoc();
-        
-        if(password_verify($current_password, $user_data['password'])) {
-            if($new_password === $confirm_password) {
-                if(strlen($new_password) >= 6) {
+
+        if (password_verify($current_password, $user_data['password'])) {
+            if ($new_password === $confirm_password) {
+                if (strlen($new_password) >= 6) {
                     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
                     $update_query = "UPDATE users SET password = ? WHERE id = ?";
                     $stmt = $conn->prepare($update_query);
                     $stmt->bind_param("si", $hashed_password, $user_id);
-                    
-                    if($stmt->execute()) {
+
+                    if ($stmt->execute()) {
                         $message = "Šifra je uspešno promenjena!";
                         $message_type = "success";
                     } else {
@@ -84,9 +86,9 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 $reservations_query = "SELECT * FROM reservations WHERE user_id = ? ORDER BY created_at DESC";
-    
+
 $stmt = $conn->prepare($reservations_query);
-if($stmt === false) {
+if ($stmt === false) {
     die("Greška u upitu: " . $conn->error);
 }
 $stmt->bind_param("i", $user_id);
@@ -96,20 +98,22 @@ $reservations_result = $stmt->get_result();
 
 <!DOCTYPE html>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Korisnički Dashboard - ArenaGo</title>
-    
+
     <link href="../../__bootstrap_packages/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
+
 <body class="bg-light">
 
     <?php require_once '../../utils/header-user.php'; ?>
 
     <div class="container">
-        <?php if($message): ?>
+        <?php if ($message): ?>
             <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
                 <?php echo $message; ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -133,7 +137,7 @@ $reservations_result = $stmt->get_result();
                                             <i class="bi bi-envelope"></i> <?php echo htmlspecialchars($user['email']); ?>
                                         </p>
                                         <div>
-                                            <?php if($user['status'] == 'active'): ?>
+                                            <?php if ($user['status'] == 'active'): ?>
                                                 <span class="badge bg-success"><i class="bi bi-check-circle"></i> Aktivan nalog</span>
                                             <?php else: ?>
                                                 <span class="badge bg-danger"><i class="bi bi-ban"></i> Blokiran nalog</span>
@@ -143,7 +147,7 @@ $reservations_result = $stmt->get_result();
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Desna strana - Opcije za izmenu profila -->
                             <div class="col-md-6 border-start">
                                 <ul class="nav nav-tabs" id="profileTabs" role="tablist">
@@ -158,7 +162,7 @@ $reservations_result = $stmt->get_result();
                                         </button>
                                     </li>
                                 </ul>
-                                
+
                                 <div class="tab-content p-3" id="profileTabsContent">
                                     <!-- Tab za promenu imena -->
                                     <div class="tab-pane fade show active" id="name" role="tabpanel">
@@ -172,7 +176,7 @@ $reservations_result = $stmt->get_result();
                                             </button>
                                         </form>
                                     </div>
-                                    
+
                                     <!-- Tab za promenu šifre -->
                                     <div class="tab-pane fade" id="password" role="tabpanel">
                                         <form method="POST" action="">
@@ -212,7 +216,7 @@ $reservations_result = $stmt->get_result();
                         </h5>
                     </div>
                     <div class="card-body">
-                        <?php if($reservations_result && $reservations_result->num_rows > 0): ?>
+                        <?php if ($reservations_result && $reservations_result->num_rows > 0): ?>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle">
                                     <thead class="table-light">
@@ -227,7 +231,7 @@ $reservations_result = $stmt->get_result();
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php while($reservation = $reservations_result->fetch_assoc()): ?>
+                                        <?php while ($reservation = $reservations_result->fetch_assoc()): ?>
                                             <tr>
                                                 <td>
                                                     <strong><?php echo htmlspecialchars($reservation['center_name'] ?? 'N/A'); ?></strong><br>
@@ -236,7 +240,7 @@ $reservations_result = $stmt->get_result();
                                                     </small>
                                                 </td>
                                                 <td>
-                                                    <?php 
+                                                    <?php
                                                     $sportIcons = [
                                                         'Fudbal' => 'bi bi-football',
                                                         'fudbal' => 'bi bi-football',
@@ -255,7 +259,7 @@ $reservations_result = $stmt->get_result();
                                                         'Bazen' => 'bi bi-water',
                                                         'bazen' => 'bi bi-water'
                                                     ];
-                                                    
+
                                                     $sportName = $reservation['sport_type'] ?? 'Nepoznato';
                                                     $icon = isset($sportIcons[$sportName]) ? $sportIcons[$sportName] : 'bi bi-trophy';
                                                     ?>
@@ -266,13 +270,13 @@ $reservations_result = $stmt->get_result();
                                                 <td><?php echo isset($reservation['time']) ? date('H:i', strtotime($reservation['time'])) : 'N/A'; ?></td>
                                                 <td>
                                                     <strong><?php echo isset($reservation['price']) ? number_format($reservation['price'], 0, ',', '.') . ' RSD' : 'N/A'; ?></strong>
-                                                    <?php if(!empty($reservation['action_discount'])): ?>
+                                                    <?php if (!empty($reservation['action_discount'])): ?>
                                                         <br><span class="badge bg-danger">-<?php echo $reservation['action_discount']; ?>%</span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
                                                     <?php
-                                                    switch($reservation['status'] ?? '') {
+                                                    switch ($reservation['status'] ?? '') {
                                                         case 'confirmed':
                                                             echo '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Potvrđeno</span>';
                                                             break;
@@ -311,19 +315,20 @@ $reservations_result = $stmt->get_result();
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-    // Opciono: Dodati validaciju za šifre na klijentskoj strani
-    document.getElementById('confirm_password')?.addEventListener('input', function() {
-        var newPass = document.getElementById('new_password').value;
-        var confirmPass = this.value;
-        
-        if(newPass !== confirmPass) {
-            this.setCustomValidity('Šifre se ne poklapaju');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
+        // Opciono: Dodati validaciju za šifre na klijentskoj strani
+        document.getElementById('confirm_password')?.addEventListener('input', function() {
+            var newPass = document.getElementById('new_password').value;
+            var confirmPass = this.value;
+
+            if (newPass !== confirmPass) {
+                this.setCustomValidity('Šifre se ne poklapaju');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
     </script>
 </body>
+
 </html>
