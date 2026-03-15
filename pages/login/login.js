@@ -47,9 +47,13 @@ $("#loginBtn").click(function() {
             if (response.status === "success") {
                 showNotification('Uspešno ste se prijavili! Preusmeravanje...', 'success');
                 setTimeout(function() {
+                    if(response.user && response.user.role == "admin")
+                    {
+                        window.location.href = "../admin/dashboard-admin.php";
+                    }
                     if (response.user && response.user.role == "center") {
                         window.location.href = "../center/dashboard-center.php";
-                    } else {
+                    } if  (response.user && response.user.role == "user") {
                         window.location.href = "../user/dashboard-user.php";
                     }
                 }, 1000);

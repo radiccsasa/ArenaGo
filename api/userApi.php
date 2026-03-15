@@ -94,6 +94,15 @@ function login() {
     
     $user = mysqli_fetch_assoc($result);
 
+    // Provera da li je korisnik blokiran
+if($user['status'] == 'blocked') {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Vaš nalog je blokiran zbog neprimerenog ponašanja. Kontaktirajte administratora za više informacija."
+    ]);
+    return;
+}
+
     if (!password_verify($password, $user['password'])) {
         echo json_encode([
             "status" => "error",
