@@ -324,7 +324,6 @@ function displayTermsGrid(terms) {
         <div class="card h-100 shadow-sm">
           <div class="card-header ${statusClass} text-white">
             <span>${statusText}</span>
-            <span class="float-end">#${term.id}</span>
           </div>
           <div class="card-body">
             <h5 class="card-title">

@@ -41,7 +41,7 @@
         <?php echo isset($_GET['id']) ? 'Sačuvaj izmene' : 'Dodaj termin'; ?>
       </button>
 
-      <a href="dashboard-center.php" class="btn btn-secondary">Odustani</a>
+      <a href="/ArenaGo/pages/center/dashboard-center.php" class="btn btn-secondary">Odustani</a>
     </form>
   </div>
 

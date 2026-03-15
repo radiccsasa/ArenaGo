@@ -112,7 +112,7 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
                         <?php if ($_SESSION['user']['role'] == 'center'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/ArenaGo/pages/center/dashboard-center.php">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                    <i class="bi bi-speedometer2"></i> Profil
                                 </a>
                             </li>
                         <?php elseif ($_SESSION['user']['role'] == 'user'): ?>

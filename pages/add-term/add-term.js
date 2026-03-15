@@ -93,8 +93,10 @@ function updateTerm() {
     success: function (response) {
       console.log("Update response:", response);
       if (response.status === "success") {
-        showToast("Termin uspešno ažuriran!", success);
-        window.location.href = "/ArenaGo/pages/center/dashboard-center.php";
+        showToast("Termin uspešno ažuriran!", "success");
+        setTimeout(function() {
+          window.location.href = "/ArenaGo/pages/center/dashboard-center.php";
+        }, 500);
       } else {
         showToast(
           "Greška: " + (response.message || "Nepoznata greška"),
