@@ -31,6 +31,7 @@ $terms_query = "
     JOIN sports_centers sc ON t.center_id = sc.id
     JOIN sports s ON t.sport_id = s.id
     WHERE 1=1
+    AND t.date >= CURDATE()
 ";
 
 $params = [];

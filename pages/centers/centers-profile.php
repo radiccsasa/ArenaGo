@@ -43,6 +43,7 @@ $terms_query = "
     JOIN sports_centers sc ON t.center_id = sc.id
     JOIN sports s ON t.sport_id = s.id
     WHERE t.center_id = ?
+    AND t.date >= CURDATE() 
     ORDER BY t.date, t.time
 ";
 $stmt = $conn->prepare($terms_query);
