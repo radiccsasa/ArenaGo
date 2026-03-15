@@ -1,5 +1,4 @@
 $(document).ready(function () {
-  // Prvo proveri da li centar postoji
   $.ajax({
     url: "../../api/centerApi.php",
     method: "POST",
@@ -27,14 +26,15 @@ $(document).ready(function () {
         $("#headerForm").text("Kreiraj svoj centar");
       }
     },
-    error: function (xhr, status, error) {},
+    error: function (xhr, status, error) {
+      showToast("Doslo je do greske", "error");
+    },
   });
 
   loadStatistics();
   loadReservations();
   loadTerms();
 
-  // Filter događaji
   $("#searchReservation").on("keyup", function () {
     let search = $(this).val();
     let status = $("#filterStatus").val();
@@ -47,7 +47,6 @@ $(document).ready(function () {
     loadReservations(status, search);
   });
 
-  // Delegacija za dugmad (MORAJU biti unutar document.ready)
   $(document).on("click", ".approve-btn", function () {
     let reservationId = $(this).data("id");
     updateReservationStatus(reservationId, "approved");
@@ -59,7 +58,6 @@ $(document).ready(function () {
   });
 });
 
-// Sve funkcije ostaju iste, ali ih stavi VAN document.ready
 function createCenter() {
   let name = $("#name").val();
   let description = $("#description").val();
@@ -83,7 +81,7 @@ function createCenter() {
     },
     success: function (response) {
       if (response.status == "success") {
-        alert("Centar uspešno kreiran!");
+        showToast("Centar uspešno kreiran!", "success");
         $("#saveCenter")
           .text("Ažuriraj centar")
           .removeClass("btn-success")
@@ -92,11 +90,14 @@ function createCenter() {
           .on("click", updateCenter);
         $("#headerForm").text("Azuriraj Podatke");
       } else {
-        alert("Greška: " + (response.message || "Nepoznata greška"));
+        showToast(
+          "Greška: " + (response.message || "Nepoznata greška"),
+          "error",
+        );
       }
     },
     error: function (xhr, status, error) {
-      alert("Došlo je do greške na serveru: " + error);
+      showToast("Došlo je do greške na serveru: " + error, "error");
     },
   });
 }
@@ -124,14 +125,16 @@ function updateCenter() {
     },
     success: function (response) {
       if (response.status == "success") {
-        alert("Centar uspešno ažuriran!");
-        window.location.reload();
+        showToast("Centar uspešno ažuriran!", "success");
       } else {
-        alert("Greška: " + (response.message || "Nepoznata greška"));
+        showToast(
+          "Greška: " + (response.message || "Nepoznata greška"),
+          "error",
+        );
       }
     },
     error: function (xhr, status, error) {
-      alert("Došlo je do greške na serveru: " + error);
+      showToast("Došlo je do greške na serveru: " + error, "error");
     },
   });
 }
@@ -179,15 +182,15 @@ function loadStatistics() {
 
 function validateForm() {
   if (!$("#name").val()) {
-    alert("Naziv centra je obavezan");
+    showToast("Naziv centra je obavezan");
     return false;
   }
   if (!$("#description").val()) {
-    alert("Opis centra je obavezan");
+    showToast("Opis centra je obavezan");
     return false;
   }
   if (!$("#location").val()) {
-    alert("Lokacija je obavezna");
+    showToast("Lokacija je obavezna");
     return false;
   }
   return true;
@@ -521,19 +524,23 @@ function updateReservationStatus(reservationId, status) {
     },
     success: function (response) {
       if (response.status === "success") {
-        alert(
+        showToast(
           `Rezervacija je uspešno ${status === "approved" ? "prihvaćena" : "odbijena"}!`,
+          "success",
         );
         loadReservations(
           $("#filterStatus").val(),
           $("#searchReservation").val(),
         );
       } else {
-        alert("Greška: " + (response.message || "Nepoznata greška"));
+        showToast(
+          "Greška: " + (response.message || "Nepoznata greška"),
+          "error",
+        );
       }
     },
     error: function (xhr, status, error) {
-      alert("Došlo je do greške na serveru: " + error);
+      showToast("Došlo je do greške na serveru: " + error, "error");
     },
   });
 }

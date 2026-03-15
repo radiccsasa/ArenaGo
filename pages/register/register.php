@@ -1,9 +1,11 @@
 <!doctype html>
 <?php
+require_once "../../utils/toast/toast.php";
+
 session_start();
 
 if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
-    switch($_SESSION['user']['role']) {
+    switch ($_SESSION['user']['role']) {
         case 'admin':
             header('Location: /ArenaGo/pages/admin/dashboard-admin.php');
             break;
@@ -17,6 +19,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
 }
 ?>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8" />
     <title>Registracija - ArenaGo</title>
@@ -26,6 +29,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
 </head>
+
 <body class="bg-light">
     <?php require_once '../../utils/header-user.php'; ?>
 
@@ -34,7 +38,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
             <div class="col-md-5">
                 <!-- Mesto za notifikacije -->
                 <div id="notificationArea"></div>
-                
+
                 <div class="card shadow-lg border-0">
                     <div class="card-header bg-success text-white text-center py-3">
                         <i class="bi bi-person-plus fs-1"></i>
@@ -48,14 +52,14 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
                                 </label>
                                 <input id="name" type="text" class="form-control form-control-lg" placeholder="Petar Petrović" required />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">
                                     <i class="bi bi-envelope"></i> Email
                                 </label>
                                 <input id="email" type="email" class="form-control form-control-lg" placeholder="petar@email.com" required />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">
                                     <i class="bi bi-lock"></i> Lozinka
@@ -78,10 +82,10 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
                                 <i class="bi bi-person-plus"></i> Registruj se
                             </button>
                         </form>
-                        
+
                         <div class="text-center mt-4">
                             <p class="text-muted">
-                                Već imate nalog? 
+                                Već imate nalog?
                                 <a href="../login/login.php" class="text-success text-decoration-none">
                                     Prijavite se <i class="bi bi-arrow-right"></i>
                                 </a>
@@ -95,4 +99,5 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user'])) {
 
     <script src="register.js?v=2"></script>
 </body>
+
 </html>
