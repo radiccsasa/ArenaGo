@@ -268,12 +268,12 @@ function displayTermsGrid(terms) {
       <div class="col-12">
         <div class="alert alert-info text-center">
           Još uvek nemate dodate termine. 
-          <a href="add-term.php" class="alert-link">Dodaj prvi termin</a>
+          <a href="/ArenaGo/pages/add-term/add-term.php" class="alert-link">Dodaj prvi termin</a>
         </div>
       </div>
       <!-- Dodaj dugme i kada nema termina -->
       <div class="col">
-        <a href="add-term.php" class="text-decoration-none">
+        <a href="/ArenaGo/pages/add-term/add-term.php" class="text-decoration-none">
           <div class="card h-100 shadow-sm border-2 border-success border-opacity-25 bg-light">
             <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 300px;">
               <div class="display-1 text-success mb-3">+</div>
