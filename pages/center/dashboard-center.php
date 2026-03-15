@@ -15,6 +15,7 @@
 </head>
 
 <body>
+  <?php require_once '../../utils/header-user.php' ?>
 
   <div class="container mt-5">
 
@@ -44,12 +45,23 @@
 
     </div>
 
-    <div class="mt-4">
+    <div class="container mt-4">
+      <h4>Termini</h4>
 
-      <a href="../add-term/add-term.php" class="btn btn-success me-2">
-        Dodaj termin
-      </a>
-
+      <!-- Grid termina -->
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="termsGrid">
+        <!-- Ovde će se učitati termini preko AJAX-a -->
+        <div class="col">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Učitavanje...</span>
+              </div>
+              <p class="mt-2">Učitavanje termina...</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card p-4 mt-4">

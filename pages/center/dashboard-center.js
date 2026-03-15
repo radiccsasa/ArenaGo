@@ -8,7 +8,6 @@ $(document).ready(function () {
     },
     dataType: "json",
     success: function (response) {
-      console.log("Check center response:", response); // Dodaj za debug
       if (response.exists) {
         loadCenterData();
         $("#saveCenter")
@@ -28,14 +27,12 @@ $(document).ready(function () {
         $("#headerForm").text("Kreiraj svoj centar");
       }
     },
-    error: function (xhr, status, error) {
-      console.error("Error checking center:", error);
-      console.log("Response:", xhr.responseText);
-    },
+    error: function (xhr, status, error) {},
   });
 
   loadStatistics();
   loadReservations();
+  loadTerms();
 
   // Filter događaji
   $("#searchReservation").on("keyup", function () {
@@ -85,7 +82,6 @@ function createCenter() {
       methodName: "createCenter",
     },
     success: function (response) {
-      console.log("Create response:", response); // Dodaj za debug
       if (response.status == "success") {
         alert("Centar uspešno kreiran!");
         $("#saveCenter")
@@ -94,13 +90,12 @@ function createCenter() {
           .addClass("btn-primary")
           .off("click")
           .on("click", updateCenter);
+        $("#headerForm").text("Azuriraj Podatke");
       } else {
         alert("Greška: " + (response.message || "Nepoznata greška"));
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error creating center:", error);
-      console.log("Response:", xhr.responseText);
       alert("Došlo je do greške na serveru: " + error);
     },
   });
@@ -128,16 +123,14 @@ function updateCenter() {
       methodName: "updateCenter",
     },
     success: function (response) {
-      console.log("Update response:", response); // Dodaj za debug
       if (response.status == "success") {
         alert("Centar uspešno ažuriran!");
+        window.location.reload();
       } else {
         alert("Greška: " + (response.message || "Nepoznata greška"));
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error updating center:", error);
-      console.log("Response:", xhr.responseText);
       alert("Došlo je do greške na serveru: " + error);
     },
   });
@@ -152,7 +145,6 @@ function loadCenterData() {
     },
     dataType: "json",
     success: function (response) {
-      console.log("Load center data response:", response); // Dodaj za debug
       if (response.status == "success") {
         const center = response.data;
         $("#name").val(center.name || "");
@@ -162,9 +154,7 @@ function loadCenterData() {
         $("#longitude").val(center.longitude || "");
       }
     },
-    error: function (xhr, status, error) {
-      console.error("Error loading center data:", error);
-    },
+    error: function (xhr, status, error) {},
   });
 }
 
@@ -177,16 +167,13 @@ function loadStatistics() {
       methodName: "getStats",
     },
     success: function (response) {
-      console.log("Stats response:", response); // Dodaj za debug
       $("#stats").html(`
         <p>Ukupno rezervacija: ${response.reservations || 0}</p>
         <p>Ukupno termina: ${response.terms || 0}</p>
         <p>Prosečna ocena: ${response.rating || "Nema ocena"}</p>
       `);
     },
-    error: function (xhr, status, error) {
-      console.error("Error loading stats:", error);
-    },
+    error: function (xhr, status, error) {},
   });
 }
 
@@ -217,7 +204,6 @@ function loadReservations(status = "", search = "") {
       search: search,
     },
     success: function (response) {
-      console.log("Reservations response:", response); // Dodaj za debug
       if (response.status === "success") {
         displayReservations(response.data);
       } else {
@@ -229,13 +215,181 @@ function loadReservations(status = "", search = "") {
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error loading reservations:", error);
-      console.log("Response:", xhr.responseText);
       $("#reservationsBody").html(
         '<tr><td colspan="9" class="text-center text-danger">Greška pri učitavanju rezervacija</td></tr>',
       );
     },
   });
+}
+
+function loadTerms() {
+  console.log("loadTerms se poziva");
+
+  $.ajax({
+    url: "../../api/termApi.php",
+    method: "POST",
+    data: {
+      methodName: "getAllCenterTerms",
+    },
+    dataType: "json",
+    success: function (response) {
+      console.log("USPEH - termini:", response);
+      if (response.status === "success") {
+        displayTermsGrid(response.data);
+      } else {
+        $("#termsGrid").html(`
+          <div class="col-12">
+            <div class="alert alert-danger text-center">
+              Greška: ${response.message || "Nepoznata greška"}
+            </div>
+          </div>
+        `);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("AJAX greška:", error);
+      $("#termsGrid").html(`
+        <div class="col-12">
+          <div class="alert alert-danger text-center">
+            Greška pri učitavanju termina. Proveri konzolu.
+          </div>
+        </div>
+      `);
+    },
+  });
+}
+
+function displayTermsGrid(terms) {
+  if (!terms || terms.length === 0) {
+    $("#termsGrid").html(`
+      <div class="col-12">
+        <div class="alert alert-info text-center">
+          Još uvek nemate dodate termine. 
+          <a href="add-term.php" class="alert-link">Dodaj prvi termin</a>
+        </div>
+      </div>
+      <!-- Dodaj dugme i kada nema termina -->
+      <div class="col">
+        <a href="add-term.php" class="text-decoration-none">
+          <div class="card h-100 shadow-sm border-2 border-success border-opacity-25 bg-light">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 300px;">
+              <div class="display-1 text-success mb-3">+</div>
+              <h5 class="card-title text-success">Dodaj novi termin</h5>
+              <p class="text-muted">Klikni da dodaš novi termin</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    `);
+    return;
+  }
+
+  let html = "";
+
+  // Prvo dodaj sve postojeće termine
+  terms.forEach(function (term) {
+    // Formatiranje datuma
+    let date = new Date(term.date);
+    let formattedDate = date.toLocaleDateString("sr-RS");
+
+    // Boja za status termina
+    let statusClass = "";
+    let statusText = "";
+
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let termDate = new Date(term.date);
+
+    if (termDate < today) {
+      statusClass = "bg-warning";
+      statusText = "Prošao";
+    } else if (termDate.toDateString() === today.toDateString()) {
+      statusClass = "bg-success";
+      statusText = "Danas";
+    } else {
+      statusClass = "bg-primary";
+      statusText = "Predstoji";
+    }
+
+    // Izračunaj cenu sa popustom
+    let price = parseFloat(term.price) || 0;
+    let discount = parseFloat(term.action_discount) || 0;
+    let finalPrice = price - (price * discount) / 100;
+
+    html += `
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header ${statusClass} text-white">
+            <span>${statusText}</span>
+            <span class="float-end">#${term.id}</span>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">
+              <span class="badge bg-info mb-2">${escapeHtml(term.sport_name || "Sport")}</span>
+            </h5>
+            
+            <div class="mb-2">
+              <i class="bi bi-calendar"></i> Datum: <strong>${formattedDate}</strong>
+            </div>
+            
+            <div class="mb-2">
+              <i class="bi bi-clock"></i> Vreme: <strong>${term.time}</strong>
+            </div>
+            
+            <div class="mb-2">
+              <i class="bi bi-people"></i> Kapacitet: <strong>${term.capacity}</strong>
+            </div>
+            
+            <div class="mb-2">
+              <i class="bi bi-tag"></i> Cena: 
+              ${
+                discount > 0
+                  ? `<span class="text-decoration-line-through text-muted me-2">${formatPrice(price)}</span>
+                 <span class="text-success fw-bold">${formatPrice(finalPrice)}</span>`
+                  : `<span class="fw-bold">${formatPrice(price)}</span>`
+              }
+            </div>
+            
+            ${
+              discount > 0
+                ? `<div class="mb-2">
+                <span class="badge bg-danger">Popust ${discount}%</span>
+              </div>`
+                : ""
+            }
+          </div>
+          
+          <div class="card-footer bg-transparent">
+            <div class="d-flex justify-content-between">
+              <a href="/ArenaGo/pages/add-term/add-term.php?id=${term.id}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i> Izmeni
+              </a>
+              <a href="/ArenaGo/api/removeTerm.php?termId=${term.id}" class="btn btn-sm btn-outline-danger delete-term" data-id="${term.id}">
+                <i class="bi bi-trash"></i> Obriši
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  // Dodaj dugme za novi termin na KRAJU
+  html += `
+    <div class="col">
+      <a href="/ArenaGo/pages/add-term/add-term.php" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-2 border-success border-opacity-25 bg-light hover-scale">
+          <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 300px;">
+            <div class="display-1 text-success mb-3">+</div>
+            <h5 class="card-title text-success">Dodaj novi termin</h5>
+            <p class="text-muted">Klikni da dodaš novi termin</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  `;
+
+  $("#termsGrid").html(html);
 }
 
 function displayReservations(reservations) {
@@ -362,7 +516,6 @@ function updateReservationStatus(reservationId, status) {
       status: status,
     },
     success: function (response) {
-      console.log("Update status response:", response); // Dodaj za debug
       if (response.status === "success") {
         alert(
           `Rezervacija je uspešno ${status === "approved" ? "prihvaćena" : "odbijena"}!`,
@@ -376,8 +529,6 @@ function updateReservationStatus(reservationId, status) {
       }
     },
     error: function (xhr, status, error) {
-      console.error("Error updating reservation:", error);
-      console.log("Response:", xhr.responseText);
       alert("Došlo je do greške na serveru: " + error);
     },
   });
