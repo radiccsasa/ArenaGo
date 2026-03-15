@@ -276,17 +276,19 @@ $centers_result = $stmt_centers->get_result();
                 }
             <?php else: ?>
                 $.ajax({
-                    url: '../../api/zakazi-termin.php',
+                    url: '../../api/reservationApi.php',
                     method: 'POST',
                     data: {
-                        term_id: termId
+                        termId: termId,
+                        methodName: 'reserve'
                     },
+                    dataType: "json",
                     success: function(response) {
                         showToast('Termin je uspešno zakazan! Čeka potvrdu centra.');
-                        location.reload();
+                        // location.reload();
                     },
-                    error: function() {
-                        showToast('Došlo je do greške prilikom zakazivanja.', "error");
+                    error: function(err) {
+                        showToast(err.message, "error");
                     }
                 });
             <?php endif; ?>

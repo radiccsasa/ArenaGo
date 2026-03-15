@@ -15,7 +15,8 @@
 </head>
 
 <body>
-  <?php require_once '../../utils/header-user.php' ?>
+  <?php require_once '../../utils/header-user.php';
+  require_once '../../utils/toast/toast.php' ?>
 
   <div class="container mt-5">
 
