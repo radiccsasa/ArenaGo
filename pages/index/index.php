@@ -16,8 +16,8 @@ $sports_query = "SELECT * FROM sports ORDER BY name";
 $sports_result = $conn->query($sports_query);
 
 
-$centers_query = "SELECT id, name FROM sports_centers ORDER BY name";
-$centers_result = $conn->query($centers_query);
+$centers_dropdown_query = "SELECT id, name FROM sports_centers ORDER BY name";
+$centers_dropdown_result = $conn->query($centers_dropdown_query);
 
 
 $terms_query = "
@@ -82,6 +82,7 @@ $stmt->execute();
 $terms_result = $stmt->get_result();
 
 
+// Dohvatanje sportskih centara sa prosečnim rejtingom - SA FILTERIMA
 $centers_query = "
     SELECT 
         sc.*,
@@ -89,11 +90,34 @@ $centers_query = "
         COUNT(r.id) as rating_count
     FROM sports_centers sc
     LEFT JOIN ratings r ON sc.id = r.center_id
-    GROUP BY sc.id
-    ORDER BY avg_rating DESC, sc.name
-    LIMIT 8
+    WHERE 1=1
 ";
-$centers_result = $conn->query($centers_query);
+
+$center_params = [];
+$center_types = "";
+
+// Dodajemo filter za lokaciju (grad)
+if(!empty($filter_location)) {
+    $centers_query .= " AND sc.location LIKE ?";
+    $center_params[] = "%$filter_location%";
+    $center_types .= "s";
+}
+
+// Dodajemo filter za naziv centra
+if(!empty($filter_center)) {
+    $centers_query .= " AND sc.name LIKE ?";
+    $center_params[] = "%$filter_center%";
+    $center_types .= "s";
+}
+
+$centers_query .= " GROUP BY sc.id ORDER BY avg_rating DESC, sc.name LIMIT 8";
+
+$stmt_centers = $conn->prepare($centers_query);
+if(!empty($center_params)) {
+    $stmt_centers->bind_param($center_types, ...$center_params);
+}
+$stmt_centers->execute();
+$centers_result = $stmt_centers->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -104,7 +128,6 @@ $centers_result = $conn->query($centers_query);
     <title>ArenaGo - Sportski termini i centri</title>
     
     <link href="../../__bootstrap_packages/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body class="bg-light">
@@ -122,13 +145,13 @@ $centers_result = $conn->query($centers_query);
                         <?php if($_SESSION['user']['role'] == 'center'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/ArenaGo/pages/center/dashboard-center.php">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                    <i class="bi bi-speedometer2"></i> Profil
                                 </a>
                             </li>
                         <?php elseif($_SESSION['user']['role'] == 'user'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/ArenaGo/pages/user/dashboard-user.php">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                    <i class="bi bi-speedometer2"></i> Profil
                                 </a>
                             </li>
                         <?php endif; ?>
@@ -221,7 +244,7 @@ $centers_result = $conn->query($centers_query);
 
         <!-- Sekcija sa sportskim centrima -->
         <h3 class="mb-3">
-            <i class="bi bi-trophy text-primary"></i> Sportski centri po rejtingu
+            <i class="bi bi-trophy text-primary"></i> Najbolje ocenjeni Sportski Centri
         </h3>
         <div class="row">
             <?php if($centers_result->num_rows > 0): ?>
@@ -231,7 +254,7 @@ $centers_result = $conn->query($centers_query);
             <?php else: ?>
                 <div class="col-12">
                     <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> Još uvek nema sportskih centara.
+                        <i class="bi bi-info-circle"></i> Nema sportskih centara za zadate filtere.
                     </div>
                 </div>
             <?php endif; ?>
@@ -249,7 +272,7 @@ $centers_result = $conn->query($centers_query);
             }
         <?php else: ?>
             $.ajax({
-                url: 'pages/api/zakazi-termin.php',
+                url: '../../api/zakazi-termin.php',
                 method: 'POST',
                 data: { term_id: termId },
                 success: function(response) {

@@ -322,12 +322,11 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
         <?php endfor; ?>
     }
     
-    // Slanje komentara
     $('#commentForm').submit(function(e) {
         e.preventDefault();
         
         $.ajax({
-            url: '/ArenaGo/api/add-comment.php',
+            url: '../../api/add-comment.php',
             method: 'POST',
             data: $(this).serialize(),
             success: function(response) {

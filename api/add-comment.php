@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../../DB/db.config.php";
+require_once "../DB/db.config.php";
 
 if(!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'user') {
     http_response_code(401);
