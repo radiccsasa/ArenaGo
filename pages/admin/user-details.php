@@ -2,12 +2,12 @@
 session_start();
 require_once "../../DB/db.config.php";
 
-if(!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
     header("Location: /ArenaGo/pages/login/login.php");
     exit();
 }
 
-if(!isset($_GET['id']) || empty($_GET['id'])) {
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: users.php");
     exit();
 }
@@ -20,7 +20,7 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
-if(!$user) {
+if (!$user) {
     header("Location: users.php");
     exit();
 }
@@ -53,6 +53,7 @@ $comments = $stmt->get_result();
 
 <!DOCTYPE html>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,6 +61,7 @@ $comments = $stmt->get_result();
     <link href="../../__bootstrap_packages/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
@@ -77,13 +79,13 @@ $comments = $stmt->get_result();
                         <h3><?php echo htmlspecialchars($user['name']); ?></h3>
                         <p><i class="bi bi-envelope"></i> <?php echo htmlspecialchars($user['email']); ?></p>
                         <p>
-                            <?php if($user['role'] == 'center'): ?>
+                            <?php if ($user['role'] == 'center'): ?>
                                 <span class="badge bg-success">Sportski centar</span>
                             <?php else: ?>
                                 <span class="badge bg-info">Korisnik</span>
                             <?php endif; ?>
-                            
-                            <?php if($user['status'] == 'active'): ?>
+
+                            <?php if ($user['status'] == 'active'): ?>
                                 <span class="badge bg-success">Aktivan</span>
                             <?php else: ?>
                                 <span class="badge bg-danger">Blokiran</span>
@@ -94,7 +96,7 @@ $comments = $stmt->get_result();
                         <a href="users.php" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Nazad
                         </a>
-                        <?php if($user['status'] == 'active'): ?>
+                        <?php if ($user['status'] == 'active'): ?>
                             <button class="btn btn-danger ms-2" onclick="toggleUserStatus(<?php echo $user['id']; ?>, 'block')">
                                 <i class="bi bi-ban"></i> Blokiraj
                             </button>
@@ -113,7 +115,7 @@ $comments = $stmt->get_result();
                 <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Rezervacije korisnika</h5>
             </div>
             <div class="card-body">
-                <?php if($reservations->num_rows > 0): ?>
+                <?php if ($reservations->num_rows > 0): ?>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -126,26 +128,32 @@ $comments = $stmt->get_result();
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while($res = $reservations->fetch_assoc()): ?>
-                                <tr>
-                                    <td>
-                                        <a href="center-details.php?id=<?php echo $res['center_id']; ?>">
-                                            <?php echo htmlspecialchars($res['center_name']); ?>
-                                        </a>
-                                    </td>
-                                    <td><?php echo date('d.m.Y', strtotime($res['date'])); ?></td>
-                                    <td><?php echo $res['time']; ?></td>
-                                    <td><?php echo number_format($res['price'], 0, ',', '.'); ?> RSD</td>
-                                    <td>
-                                        <?php
-                                        switch($res['status']) {
-                                            case 'confirmed': echo '<span class="badge bg-success">Potvrđeno</span>'; break;
-                                            case 'pending': echo '<span class="badge bg-warning">Na čekanju</span>'; break;
-                                            case 'cancelled': echo '<span class="badge bg-danger">Otkazano</span>'; break;
-                                        }
-                                        ?>
-                                    </td>
-                                </tr>
+                                <?php while ($res = $reservations->fetch_assoc()): ?>
+                                    <tr>
+                                        <td>
+                                            <a href="center-details.php?id=<?php echo $res['center_id']; ?>">
+                                                <?php echo htmlspecialchars($res['center_name']); ?>
+                                            </a>
+                                        </td>
+                                        <td><?php echo date('d.m.Y', strtotime($res['date'])); ?></td>
+                                        <td><?php echo $res['time']; ?></td>
+                                        <td><?php echo number_format($res['price'], 0, ',', '.'); ?> RSD</td>
+                                        <td>
+                                            <?php
+                                            switch ($res['status']) {
+                                                case 'confirmed':
+                                                    echo '<span class="badge bg-success">Potvrđeno</span>';
+                                                    break;
+                                                case 'pending':
+                                                    echo '<span class="badge bg-warning">Na čekanju</span>';
+                                                    break;
+                                                case 'cancelled':
+                                                    echo '<span class="badge bg-danger">Otkazano</span>';
+                                                    break;
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
                                 <?php endwhile; ?>
                             </tbody>
                         </table>
@@ -161,8 +169,8 @@ $comments = $stmt->get_result();
                 <h5 class="mb-0"><i class="bi bi-chat"></i> Komentari korisnika</h5>
             </div>
             <div class="card-body">
-                <?php if($comments->num_rows > 0): ?>
-                    <?php while($comment = $comments->fetch_assoc()): ?>
+                <?php if ($comments->num_rows > 0): ?>
+                    <?php while ($comment = $comments->fetch_assoc()): ?>
                         <div class="border-bottom mb-3 pb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6>
@@ -172,7 +180,8 @@ $comments = $stmt->get_result();
                                 </h6>
                                 <small class="text-muted"><?php echo date('d.m.Y H:i', strtotime($comment['created_at'])); ?></small>
                             </div>
-                            <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                            <p class="mb-4"><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                            <p class="mb-4 text-primary"><span><small><i>(odgovor): </i></small></span><?php echo nl2br(htmlspecialchars($comment['comment_response'] ? $comment['comment_response'] : '(Nema odgovora)')); ?></p>
                             <button class="btn btn-sm btn-danger" onclick="deleteComment(<?php echo $comment['id']; ?>)">
                                 <i class="bi bi-trash"></i> Obriši komentar
                             </button>
@@ -187,36 +196,42 @@ $comments = $stmt->get_result();
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-    function toggleUserStatus(userId, action) {
-        if(confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovog korisnika?`)) {
-            $.ajax({
-                url: '../../api/admin/toggle-user-status.php',
-                method: 'POST',
-                data: { user_id: userId, action: action },
-                success: function(response) {
-                    location.reload();
-                },
-                error: function() {
-                    alert('Došlo je do greške.');
-                }
-            });
-        }
-    }
 
-    function deleteComment(commentId) {
-        if(confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
-            $.ajax({
-                url: '../../api/admin/delete-comment.php',
-                method: 'POST',
-                data: { comment_id: commentId },
-                success: function() {
-                    location.reload();
-                }
-            });
+    <script>
+        function toggleUserStatus(userId, action) {
+            if (confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovog korisnika?`)) {
+                $.ajax({
+                    url: '../../api/admin/toggle-user-status.php',
+                    method: 'POST',
+                    data: {
+                        user_id: userId,
+                        action: action
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Došlo je do greške.');
+                    }
+                });
+            }
         }
-    }
+
+        function deleteComment(commentId) {
+            if (confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
+                $.ajax({
+                    url: '../../api/admin/delete-comment.php',
+                    method: 'POST',
+                    data: {
+                        comment_id: commentId
+                    },
+                    success: function() {
+                        location.reload();
+                    }
+                });
+            }
+        }
     </script>
 </body>
+
 </html>

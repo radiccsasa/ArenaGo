@@ -34,6 +34,7 @@ $(document).ready(function () {
   loadStatistics();
   loadReservations();
   loadTerms();
+  loadComments();
 
   $("#searchReservation").on("keyup", function () {
     let search = $(this).val();
@@ -55,6 +56,12 @@ $(document).ready(function () {
   $(document).on("click", ".reject-btn", function () {
     let reservationId = $(this).data("id");
     updateReservationStatus(reservationId, "rejected");
+  });
+
+  $(document).on("click", ".submit-reply", function () {
+    let commentId = $(this).data("id");
+
+    commentReply(commentId);
   });
 });
 
@@ -258,6 +265,40 @@ function loadTerms() {
           </div>
         </div>
       `);
+    },
+  });
+}
+
+function loadComments() {
+  $.ajax({
+    url: "../../api/centerApi.php",
+    method: "POST",
+    data: {
+      methodName: "getCenterComments",
+    },
+    dataType: "json",
+    success: function (response) {
+      if (response.status === "success") {
+        console.log(response.data);
+        let commentsHtml = displayComments(response.data);
+        $("#commentsContainer").html(commentsHtml);
+      } else {
+        $("#commentsContainer").html(`
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        Greška pri učitavanju komentara: ${response.message}
+                    </div>
+                `);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.error("Error loading comments:", error);
+      $("#commentsContainer").html(`
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Došlo je do greške pri učitavanju komentara.
+                </div>
+            `);
     },
   });
 }
@@ -466,6 +507,114 @@ function displayReservations(reservations) {
   }
 
   $("#reservationsBody").html(html);
+}
+
+function displayComments(comments) {
+  if (!comments || comments.length === 0) {
+    return `
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Još uvek nema komentara za ovaj centar.
+                </div>
+            </div>
+        `;
+  }
+
+  let html = '<div class="col-md-12">';
+
+  comments.forEach(function (comment) {
+    // Formatiranje datuma
+    let commentDate = new Date(comment.created_at);
+    let formattedDate =
+      commentDate.toLocaleDateString("sr-RS") +
+      " " +
+      commentDate.toLocaleTimeString("sr-RS", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+    // Provera da li postoji odgovor
+    let hasResponse =
+      comment.comment_response && comment.comment_response.trim() !== "";
+
+    html += `
+            <div class="card shadow-sm mb-3" id="comment-${comment.id}">
+                <div class="card-body">
+                    <!-- Korisnički komentar -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="card-subtitle text-primary">
+                            <i class="bi bi-person-circle"></i> ${escapeHtml(comment.user_name)}
+                        </h6>
+                        <small class="text-muted">
+                            ${formattedDate}
+                        </small>
+                    </div>
+                    <p class="card-text mb-4">${escapeHtml(comment.comment).replace(/\n/g, "<br>")}</p>
+                    
+                    <!-- Odgovor centra (ako postoji) -->
+                    ${
+                      hasResponse
+                        ? `
+                        <div class="ms-4 mt-3 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-subtitle text-success">
+                                    <i class="bi bi-person-circle"></i> ${escapeHtml(comment.center_name)} 
+                                    <span><small><i>(odgovor)</i></small></span>
+                                </h6>
+                            </div>
+                            <p class="card-text">${escapeHtml(comment.comment_response).replace(/\n/g, "<br>")}</p>
+                        </div>
+                    `
+                        : ""
+                    }
+                    
+                    <!-- Ako nema odgovora i centar je ulogovan - prikaži formu za odgovor -->
+                    ${
+                      !hasResponse
+                        ? `
+                        <div class="mt-3 reply-form-${comment.id}">
+                            <textarea class="form-control mb-2" id="reply-text-${comment.id}" rows="2" placeholder="Unesite odgovor na komentar..."></textarea>
+                            <button class="btn btn-sm btn-success submit-reply" data-id="${comment.id}" data-center-id="${comment.center_id}">
+                                <i class="bi bi-send"></i> Odgovori
+                            </button>
+                        </div>
+                    `
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+  });
+
+  html += "</div>";
+  return html;
+}
+
+function commentReply(commentId) {
+  let replyText = $(`#reply-text-${commentId}`).val();
+
+  if (!replyText || replyText.trim() === "") {
+    showToast("Molimo unesite odgovor", "warning");
+    return;
+  }
+  $.ajax({
+    url: "../../api/centerApi.php",
+    method: "POST",
+    data: {
+      methodName: "replyToComment",
+      commentId: commentId,
+      response: replyText,
+    },
+    dataType: "json",
+    success: (response) => {
+      if (response.status == "success") {
+        setTimeout(() => {
+          showToast("Odgovorili ste na komentar", "success");
+          location.reload();
+        }, 500);
+      }
+    },
+  });
 }
 
 function escapeHtml(text) {

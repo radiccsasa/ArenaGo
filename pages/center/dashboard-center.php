@@ -8,13 +8,15 @@
   <title>Center Dashboard</title>
 
   <link rel="stylesheet" href="../../__bootstrap_packages/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <link rel="stylesheet" href="dashboard-centers.css">
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body>
+<body class="bg-light">
   <?php require_once '../../utils/header-user.php';
   require_once '../../utils/toast/toast.php' ?>
 
@@ -105,7 +107,6 @@
               </tr>
             </thead>
             <tbody id="reservationsBody">
-              <!-- AJAX će učitati podatke ovde -->
               <tr>
                 <td colspan="9" class="text-center">Učitavanje rezervacija...</td>
               </tr>
@@ -116,7 +117,18 @@
 
     </div>
 
+    <h3 class="mb-3 mt-4">
+      <i class="bi bi-chat text-primary"></i> Komentari
+    </h3>
+    <div class="row mb-4" id="commentsContainer">
+      <div class="col-md-12 text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Učitavanje komentara...</span>
+        </div>
+      </div>
+    </div>
   </div>
+
 
 
 

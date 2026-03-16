@@ -2,12 +2,12 @@
 session_start();
 require_once "../../DB/db.config.php";
 
-if(!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
     header("Location: /ArenaGo/pages/login/login.php");
     exit();
 }
 
-if(!isset($_GET['id']) || empty($_GET['id'])) {
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: centers.php");
     exit();
 }
@@ -31,7 +31,7 @@ $stmt->bind_param("i", $center_id);
 $stmt->execute();
 $center = $stmt->get_result()->fetch_assoc();
 
-if(!$center) {
+if (!$center) {
     header("Location: centers.php");
     exit();
 }
@@ -45,6 +45,7 @@ $stats_query = "
         COUNT(DISTINCT CASE WHEN r.status = 'confirmed' THEN r.id END) as confirmed_reservations,
         COUNT(DISTINCT CASE WHEN r.status = 'pending' THEN r.id END) as pending_reservations,
         COUNT(DISTINCT c.id) as total_comments,
+        COUNT(DISTINCT CASE WHEN c.comment_response IS NOT NULL AND c.comment_response != '' THEN c.id END) as responded_comments,
         COALESCE(AVG(rt.rating), 0) as avg_rating,
         COUNT(DISTINCT rt.id) as rating_count
     FROM sports_centers sc
@@ -103,9 +104,11 @@ $comments_query = "
         c.*,
         u.name as user_name,
         u.id as user_id,
-        u.status as user_status
+        u.status as user_status,
+        sc.name as center_name
     FROM comments c
     JOIN users u ON c.user_id = u.id
+    JOIN sports_centers sc ON c.center_id = sc.id
     WHERE c.center_id = ?
     ORDER BY c.created_at DESC
 ";
@@ -117,6 +120,7 @@ $comments_result = $stmt->get_result();
 
 <!DOCTYPE html>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,6 +128,7 @@ $comments_result = $stmt->get_result();
     <link href="../../__bootstrap_packages/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
@@ -149,20 +154,20 @@ $comments_result = $stmt->get_result();
                         <h2 class="text-primary mb-3"><?php echo htmlspecialchars($center['name']); ?></h2>
                         <p><i class="bi bi-geo-alt"></i> <strong>Lokacija:</strong> <?php echo htmlspecialchars($center['location'] ?? 'Nije navedeno'); ?></p>
                         <p><i class="bi bi-envelope"></i> <strong>Email:</strong> <?php echo htmlspecialchars($center['email']); ?></p>
-                        <?php if(!empty($center['description'])): ?>
+                        <?php if (!empty($center['description'])): ?>
                             <p><i class="bi bi-info-circle"></i> <strong>Opis:</strong><br><?php echo nl2br(htmlspecialchars($center['description'])); ?></p>
                         <?php endif; ?>
                     </div>
                     <div class="col-md-4 text-end">
                         <div class="mb-2">
-                            <?php if($center['user_status'] == 'active'): ?>
+                            <?php if ($center['user_status'] == 'active'): ?>
                                 <span class="badge bg-success p-3 fs-6 d-inline-block mb-2">Aktivan</span>
                             <?php else: ?>
                                 <span class="badge bg-danger p-3 fs-6 d-inline-block mb-2">Blokiran</span>
                             <?php endif; ?>
                         </div>
-                        
-                        <?php if($center['user_status'] == 'active'): ?>
+
+                        <?php if ($center['user_status'] == 'active'): ?>
                             <button class="btn btn-danger" onclick="toggleCenterStatus(<?php echo $center['user_id']; ?>, 'block')">
                                 <i class="bi bi-ban"></i> Blokiraj centar
                             </button>
@@ -201,6 +206,7 @@ $comments_result = $stmt->get_result();
                     <div class="card-body">
                         <h6>Komentari</h6>
                         <h3><?php echo $stats['total_comments']; ?></h3>
+                        <small><?php echo $stats['responded_comments']; ?> odgovora</small>
                     </div>
                 </div>
             </div>
@@ -232,14 +238,14 @@ $comments_result = $stmt->get_result();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($sport = $sports_result->fetch_assoc()): ?>
+                            <?php while ($sport = $sports_result->fetch_assoc()): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($sport['name']); ?></td>
                                     <td><?php echo $sport['term_count']; ?></td>
                                     <td><?php echo $sport['reservation_count']; ?></td>
                                     <td>
-                                        <?php 
-                                        if($sport['term_count'] > 0) {
+                                        <?php
+                                        if ($sport['term_count'] > 0) {
                                             $percentage = round(($sport['reservation_count'] / $sport['term_count']) * 100);
                                             echo $percentage . '%';
                                         } else {
@@ -275,7 +281,7 @@ $comments_result = $stmt->get_result();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($term = $terms_result->fetch_assoc()): ?>
+                            <?php while ($term = $terms_result->fetch_assoc()): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($term['sport_name']); ?></td>
                                     <td><?php echo date('d.m.Y', strtotime($term['date'])); ?></td>
@@ -284,7 +290,7 @@ $comments_result = $stmt->get_result();
                                     <td><?php echo $term['capacity'] ?? 'N/A'; ?></td>
                                     <td><?php echo $term['confirmed_count']; ?>/<?php echo $term['reservation_count']; ?></td>
                                     <td>
-                                        <?php if(strtotime($term['date']) < time()): ?>
+                                        <?php if (strtotime($term['date']) < time()): ?>
                                             <span class="badge bg-secondary">Prošao</span>
                                         <?php else: ?>
                                             <span class="badge bg-success">Aktivan</span>
@@ -304,21 +310,22 @@ $comments_result = $stmt->get_result();
                 <h5 class="mb-0"><i class="bi bi-chat"></i> Komentari</h5>
             </div>
             <div class="card-body">
-                <?php if($comments_result->num_rows > 0): ?>
-                    <?php while($comment = $comments_result->fetch_assoc()): ?>
+                <?php if ($comments_result->num_rows > 0): ?>
+                    <?php while ($comment = $comments_result->fetch_assoc()): ?>
                         <div class="border-bottom mb-3 pb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6>
                                     <a href="user-details.php?id=<?php echo $comment['user_id']; ?>" class="text-decoration-none">
                                         <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($comment['user_name']); ?>
                                     </a>
-                                    <?php if($comment['user_status'] != 'active'): ?>
+                                    <?php if ($comment['user_status'] != 'active'): ?>
                                         <span class="badge bg-danger">Blokiran</span>
                                     <?php endif; ?>
                                 </h6>
                                 <small class="text-muted"><?php echo date('d.m.Y H:i', strtotime($comment['created_at'])); ?></small>
                             </div>
                             <p class="mt-2"><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                            <p class="mb-4 text-primary"><span><small><i>(odgovor): </i></small></span><?php echo nl2br(htmlspecialchars($comment['comment_response'] ? $comment['comment_response'] : '(Nema odgovora)')); ?></p>
                             <button class="btn btn-sm btn-danger" onclick="deleteComment(<?php echo $comment['id']; ?>)">
                                 <i class="bi bi-trash"></i> Obriši komentar
                             </button>
@@ -333,39 +340,45 @@ $comments_result = $stmt->get_result();
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="../../__bootstrap_packages/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-    function toggleCenterStatus(userId, action) {
-        if(confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovaj centar?`)) {
-            $.ajax({
-                url: '../../api/admin/toggle-user-status.php',
-                method: 'POST',
-                data: { user_id: userId, action: action },
-                success: function(response) {
-                    location.reload();
-                },
-                error: function() {
-                    alert('Došlo je do greške.');
-                }
-            });
-        }
-    }
 
-    function deleteComment(commentId) {
-        if(confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
-            $.ajax({
-                url: '../../api/admin/delete-comment.php',
-                method: 'POST',
-                data: { comment_id: commentId },
-                success: function() {
-                    location.reload();
-                },
-                error: function() {
-                    alert('Došlo je do greške.');
-                }
-            });
+    <script>
+        function toggleCenterStatus(userId, action) {
+            if (confirm(`Da li ste sigurni da želite da ${action == 'block' ? 'blokirate' : 'odblokirate'} ovaj centar?`)) {
+                $.ajax({
+                    url: '../../api/admin/toggle-user-status.php',
+                    method: 'POST',
+                    data: {
+                        user_id: userId,
+                        action: action
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Došlo je do greške.');
+                    }
+                });
+            }
         }
-    }
+
+        function deleteComment(commentId) {
+            if (confirm('Da li ste sigurni da želite da obrišete ovaj komentar?')) {
+                $.ajax({
+                    url: '../../api/admin/delete-comment.php',
+                    method: 'POST',
+                    data: {
+                        comment_id: commentId
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Došlo je do greške.');
+                    }
+                });
+            }
+        }
     </script>
 </body>
+
 </html>

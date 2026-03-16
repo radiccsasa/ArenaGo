@@ -15,36 +15,38 @@ if (!isset($_SESSION['user']['id'])) {
     exit();
 }
 
-function checkCenterExists() {
+function checkCenterExists()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])) {
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(['exists' => false]);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
     $query = "SELECT id FROM sports_centers WHERE user_id = $userId";
     $result = mysqli_query($conn, $query);
-    
+
     echo json_encode([
         'exists' => mysqli_num_rows($result) > 0
     ]);
 }
 
-function getCenterData() {
+function getCenterData()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])) {
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
     $query = "SELECT * FROM sports_centers WHERE user_id = $userId";
     $result = mysqli_query($conn, $query);
-    
-    if($row = mysqli_fetch_assoc($result)) {
+
+    if ($row = mysqli_fetch_assoc($result)) {
         echo json_encode([
             'status' => 'success',
             'data' => $row
@@ -57,31 +59,32 @@ function getCenterData() {
     }
 }
 
-function updateCenter() {
+function updateCenter()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])) {
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
-    
+
     // Prvo proveri da li centar pripada ovom korisniku
     $checkQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
     $checkResult = mysqli_query($conn, $checkQuery);
-    
-    if(mysqli_num_rows($checkResult) == 0) {
+
+    if (mysqli_num_rows($checkResult) == 0) {
         echo json_encode(['status' => 'error', 'message' => 'Nemate pravo da ažurirate ovaj centar']);
         exit();
     }
-    
+
     $name = $_POST['name'];
     $description = $_POST['description'];
     $location = $_POST['location'];
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
-    
+
     $query = "UPDATE sports_centers SET 
               name = '$name',
               description = '$description',
@@ -89,91 +92,93 @@ function updateCenter() {
               latitude = $latitude,
               longitude = $longitude
               WHERE user_id = $userId";
-    
-    if(mysqli_query($conn, $query)) {
+
+    if (mysqli_query($conn, $query)) {
         echo json_encode(['status' => 'success']);
     } else {
         echo json_encode(['status' => 'error', 'message' => mysqli_error($conn)]);
     }
 }
 
-function createCenter() {
+function createCenter()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])){
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(["status" => "error", "message" => "Niste prijavljeni"]);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
-    
+
     $checkQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
     $checkResult = mysqli_query($conn, $checkQuery);
-    
-    if(mysqli_num_rows($checkResult) > 0) {
+
+    if (mysqli_num_rows($checkResult) > 0) {
         echo json_encode([
-            "status" => "error", 
+            "status" => "error",
             "message" => "Već imate registrovan centar"
         ]);
         exit();
     }
-    
+
     $name = $_POST['name'];
     $description = $_POST['description'];
     $location = $_POST['location'];
     $latitude = $_POST['latitude'];
     $longitude = $_POST['longitude'];
-    
+
     $query = "INSERT INTO sports_centers
               (user_id, name, description, location, latitude, longitude, created_at)
               VALUES
               ($userId, '$name', '$description', '$location', $latitude, $longitude, NOW())";
-    
-    if(mysqli_query($conn, $query)){
+
+    if (mysqli_query($conn, $query)) {
         echo json_encode(["status" => "success"]);
     } else {
         echo json_encode(["status" => "error", "message" => mysqli_error($conn)]);
     }
 }
 
-function getStats(){
+function getStats()
+{
 
-global $conn;
+    global $conn;
 
-$result = mysqli_query($conn,"SELECT COUNT(*) as total FROM reservations");
+    $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM reservations");
 
-$row = mysqli_fetch_assoc($result);
+    $row = mysqli_fetch_assoc($result);
 
-echo json_encode([
-"reservations"=>$row['total']
-]);
-
+    echo json_encode([
+        "reservations" => $row['total']
+    ]);
 }
 
-function getReservations() {
+function getReservations()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])) {
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
     $filterStatus = isset($_POST['filter_status']) ? $_POST['filter_status'] : '';
     $search = isset($_POST['search']) ? $_POST['search'] : '';
-    
+
     // Prvo dobavi ID centra za ovog korisnika
     $centerQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
     $centerResult = mysqli_query($conn, $centerQuery);
-    
-    if(mysqli_num_rows($centerResult) == 0) {
+
+    if (mysqli_num_rows($centerResult) == 0) {
         echo json_encode(['status' => 'error', 'message' => 'Nemate registrovan centar']);
         exit();
     }
-    
+
     $centerRow = mysqli_fetch_assoc($centerResult);
     $centerId = $centerRow['id'];
-    
+
     $query = "SELECT 
                 r.id,
                 r.status,
@@ -191,63 +196,64 @@ function getReservations() {
               INNER JOIN terms t ON r.term_id = t.id
               INNER JOIN sports s ON t.sport_id = s.id
               WHERE t.center_id = $centerId";
-    
+
     if (!empty($filterStatus)) {
         $filterStatus = $filterStatus;
         $query .= " AND r.status = '$filterStatus'";
     }
-    
+
     if (!empty($search)) {
         $search = $search;
         $query .= " AND u.name LIKE '%$search%'";
     }
-    
+
     $query .= " ORDER BY r.created_at DESC";
-    
+
     $result = mysqli_query($conn, $query);
-    
+
     $reservations = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $reservations[] = $row;
     }
-    
+
     echo json_encode([
         'status' => 'success',
         'data' => $reservations
     ]);
 }
 
-function updateReservationStatus() {
+function updateReservationStatus()
+{
     global $conn;
-    
-    if(!isset($_SESSION['user'])) {
+
+    if (!isset($_SESSION['user'])) {
         echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
         exit();
     }
-    
+
     $userId = $_SESSION['user']['id'];
     $reservationId = $_POST['reservation_id'];
     $newStatus = $_POST['status'];
-    
+
     if (!in_array($newStatus, ['approved', 'rejected'])) {
         echo json_encode(['status' => 'error', 'message' => 'Neispravan status']);
         exit();
     }
-    
+
     $checkQuery = "SELECT r.id FROM reservations r
                    INNER JOIN terms t ON r.term_id = t.id
                    INNER JOIN sports_centers sc ON t.center_id = sc.id
                    WHERE r.id = $reservationId AND sc.user_id = $userId";
-    
+
     $checkResult = mysqli_query($conn, $checkQuery);
-    
+
     if (mysqli_num_rows($checkResult) == 0) {
         echo json_encode(['status' => 'error', 'message' => 'Nemate pravo da menjate ovu rezervaciju']);
         exit();
     }
-    
+
     $updateQuery = "UPDATE reservations SET status = '$newStatus' WHERE id = $reservationId";
-    
+
     if (mysqli_query($conn, $updateQuery)) {
         echo json_encode(['status' => 'success']);
     } else {
@@ -255,34 +261,119 @@ function updateReservationStatus() {
     }
 }
 
-switch($method){
 
-case "createCenter":
-createCenter();
-break;
+function getComments()
+{
+    global $conn;
 
-case "getStats":
-getStats();
-break;
+    if (!isset($_SESSION['user'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
+        exit();
+    }
 
-case "getCenterData":
-    getCenterData();
-    break;
+    $userId = $_SESSION['user']['id'];
 
-case "checkCenterExists":
-    checkCenterExists();
-    break;
-case "updateCenter":
-    updateCenter();
-    break;
+    $centerQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
+    $centerResult = mysqli_query($conn, $centerQuery);
+
+    if (mysqli_num_rows($centerResult) == 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nemate registrovan centar']);
+        exit();
+    }
+
+    $centerRow = mysqli_fetch_assoc($centerResult);
+    $centerId = $centerRow['id'];
+
+    $query = "SELECT 
+        c.*,
+        u.name as user_name,
+        u.id as user_id,
+        u.status as user_status,
+        sc.name as center_name,
+        sc.id as center_id
+    FROM comments c
+    JOIN users u ON c.user_id = u.id
+    JOIN sports_centers sc ON c.center_id = sc.id
+    WHERE c.center_id = $centerId
+    ORDER BY c.created_at DESC";
+
+    $result = mysqli_query($conn, $query);
+
+    $comments = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $comments[] = $row;
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $comments
+    ]);
+}
+
+function replyToComment()
+{
+    global $conn;
+
+    global $conn;
+
+    if (!isset($_SESSION['user'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
+        exit();
+    }
+
+    // $userId = $_SESSION['user']['id'];
+
+    // $checkQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
+    // $checkResult = mysqli_query($conn, $checkQuery);
+
+    // if (mysqli_num_rows($checkResult) == 0) {
+    //     echo json_encode(['status' => 'error', 'message' => 'Nemate pravo da odgovarate na komentare za ovaj centar']);
+    //     return;
+    // }
+
+    $commentId = $_POST['commentId'];
+    $response = $_POST['response'];
+
+    $updateQuery = "UPDATE comments SET comment_response = '$response' WHERE id = $commentId";
+
+    if (mysqli_query($conn, $updateQuery)) {
+        echo json_encode(['status' => 'success', 'message' => 'Odgovor je sačuvan']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => mysqli_error($conn)]);
+    }
+}
+
+switch ($method) {
+
+    case "createCenter":
+        createCenter();
+        break;
+
+    case "getStats":
+        getStats();
+        break;
+
+    case "getCenterData":
+        getCenterData();
+        break;
+
+    case "checkCenterExists":
+        checkCenterExists();
+        break;
+    case "updateCenter":
+        updateCenter();
+        break;
 
     case 'getReservations':
-    getReservations();
-    break;
-case 'updateReservationStatus':
-    updateReservationStatus();
-    break;
-
-
+        getReservations();
+        break;
+    case 'updateReservationStatus':
+        updateReservationStatus();
+        break;
+    case 'getCenterComments':
+        getComments();
+        break;
+    case 'replyToComment':
+        replyToComment();
+        break;
 }
-?>

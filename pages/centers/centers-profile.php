@@ -55,9 +55,11 @@ $terms_result = $stmt->get_result();
 $comments_query = "
     SELECT 
         c.*,
-        u.name as user_name
+        u.name as user_name,
+        ct.name as center_name
     FROM comments c
     JOIN users u ON c.user_id = u.id
+    JOIN sports_centers ct ON c.center_id = ct.id
     WHERE c.center_id = ?
     ORDER BY c.created_at DESC
 ";
@@ -249,7 +251,7 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
                     <?php while ($comment = $comments_result->fetch_assoc()): ?>
                         <div class="card shadow-sm mb-3">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-">
                                     <h6 class="card-subtitle text-primary">
                                         <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($comment['user_name']); ?>
                                     </h6>
@@ -257,7 +259,15 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
                                         <?php echo date('d.m.Y. H:i', strtotime($comment['created_at'])); ?>
                                     </small>
                                 </div>
-                                <p class="card-text"><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                                <p class="card-text mb-4"><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                                <div class="ms-4 mt-3 p-3 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="card-subtitle text-success">
+                                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($comment['center_name']); ?> <span><small><i>(odgovor)</i></small></span>
+                                        </h6>
+                                    </div>
+                                    <p class="card-text"><?php echo nl2br(htmlspecialchars($comment['comment_response'] ? $comment['comment_response'] : '(Nema odgovora)')); ?></p>
+                                </div>
                             </div>
                         </div>
                     <?php endwhile; ?>
