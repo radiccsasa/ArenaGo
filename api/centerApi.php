@@ -139,20 +139,71 @@ function createCenter()
         echo json_encode(["status" => "error", "message" => mysqli_error($conn)]);
     }
 }
-
 function getStats()
 {
-
     global $conn;
 
-    $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM reservations");
+    if (!isset($_SESSION['user']['id'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Niste prijavljeni']);
+        return;
+    }
 
-    $row = mysqli_fetch_assoc($result);
+    $userId = $_SESSION['user']['id'];
+
+    // Prvo dobavi ID centra za ovog korisnika
+    $centerQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
+    $centerResult = mysqli_query($conn, $centerQuery);
+
+    if (mysqli_num_rows($centerResult) == 0) {
+        // Ako nema centra, vrati 0 za sve
+        echo json_encode([
+            'status' => 'success',
+            'data' => [
+                'total_terms' => 0,
+                'total_reservations' => 0,
+                'approved' => 0,
+                'pending' => 0,
+                'cancelled' => 0
+            ]
+        ]);
+        return;
+    }
+
+    $centerRow = mysqli_fetch_assoc($centerResult);
+    $centerId = $centerRow['id'];
+
+    // Broj termina za ovaj centar
+    $termsQuery = "SELECT COUNT(*) as total FROM terms WHERE center_id = $centerId";
+    $termsResult = mysqli_query($conn, $termsQuery);
+    $termsRow = mysqli_fetch_assoc($termsResult);
+    $totalTerms = $termsRow['total'];
+
+    // Broj rezervacija za termine ovog centra po statusima
+    $resQuery = "SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN r.status = 'approved' THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN r.status = 'pending' THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN r.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+                FROM reservations r
+                INNER JOIN terms t ON r.term_id = t.id
+                WHERE t.center_id = $centerId";
+
+    $resResult = mysqli_query($conn, $resQuery);
+    $resRow = mysqli_fetch_assoc($resResult);
 
     echo json_encode([
-        "reservations" => $row['total']
+        'status' => 'success',
+        'data' => [
+            'total_terms' => (int)$totalTerms,
+            'total_reservations' => (int)($resRow['total'] ?? 0),
+            'approved' => (int)($resRow['approved'] ?? 0),
+            'pending' => (int)($resRow['pending'] ?? 0),
+            'cancelled' => (int)($resRow['cancelled'] ?? 0)
+        ]
     ]);
 }
+
+
 
 function getReservations()
 {
@@ -167,6 +218,10 @@ function getReservations()
     $filterStatus = isset($_POST['filter_status']) ? $_POST['filter_status'] : '';
     $search = isset($_POST['search']) ? $_POST['search'] : '';
 
+    // DEBUG: ispiši šta stiže
+    error_log("getReservations - filterStatus: " . $filterStatus);
+    error_log("getReservations - search: " . $search);
+
     // Prvo dobavi ID centra za ovog korisnika
     $centerQuery = "SELECT id FROM sports_centers WHERE user_id = $userId";
     $centerResult = mysqli_query($conn, $centerQuery);
@@ -178,6 +233,9 @@ function getReservations()
 
     $centerRow = mysqli_fetch_assoc($centerResult);
     $centerId = $centerRow['id'];
+
+    // DEBUG: ispiši centerId
+    error_log("getReservations - centerId: " . $centerId);
 
     $query = "SELECT 
                 r.id,
@@ -198,29 +256,41 @@ function getReservations()
               WHERE t.center_id = $centerId";
 
     if (!empty($filterStatus)) {
-        $filterStatus = $filterStatus;
         $query .= " AND r.status = '$filterStatus'";
     }
 
     if (!empty($search)) {
-        $search = $search;
+        $search = mysqli_real_escape_string($conn, $search);
         $query .= " AND u.name LIKE '%$search%'";
     }
 
     $query .= " ORDER BY r.created_at DESC";
 
+    // DEBUG: ispiši ceo query
+    error_log("getReservations - query: " . $query);
+
     $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        error_log("getReservations - greška: " . mysqli_error($conn));
+        echo json_encode(['status' => 'error', 'message' => 'Greška u upitu: ' . mysqli_error($conn)]);
+        return;
+    }
 
     $reservations = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $reservations[] = $row;
     }
 
+    // DEBUG: ispiši koliko rezervacija je pronađeno
+    error_log("getReservations - pronađeno rezervacija: " . count($reservations));
+
     echo json_encode([
         'status' => 'success',
         'data' => $reservations
     ]);
 }
+
 
 function updateReservationStatus()
 {
@@ -233,9 +303,9 @@ function updateReservationStatus()
 
     $userId = $_SESSION['user']['id'];
     $reservationId = $_POST['reservation_id'];
-    $newStatus = $_POST['status'];
+    $newStatus = $_POST['status']; // Ovo je 'approved' ili 'cancelled'
 
-    if (!in_array($newStatus, ['approved', 'rejected'])) {
+    if (!in_array($newStatus, ['approved', 'cancelled'])) {
         echo json_encode(['status' => 'error', 'message' => 'Neispravan status']);
         exit();
     }
@@ -260,8 +330,6 @@ function updateReservationStatus()
         echo json_encode(['status' => 'error', 'message' => mysqli_error($conn)]);
     }
 }
-
-
 function getComments()
 {
     global $conn;

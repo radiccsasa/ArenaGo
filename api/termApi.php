@@ -46,13 +46,23 @@ function getAllCenterTerms()
 
     $userId = $_SESSION['user']['id'];
 
-    // Prvo dobij ID centra
     $centerResult = mysqli_query($conn, "SELECT id FROM sports_centers WHERE user_id = $userId");
+    
+    if (mysqli_num_rows($centerResult) == 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nemate registrovan centar']);
+        return;
+    }
+    
     $centerRow = mysqli_fetch_assoc($centerResult);
     $centerId = $centerRow['id'];
 
-    // Termini sa join za sport
-    $query = "SELECT t.*, s.name as sport_name 
+    $query = "SELECT 
+                t.*, 
+                s.name as sport_name,
+                (SELECT COUNT(*) FROM reservations WHERE term_id = t.id AND status = 'approved') as approved_count,
+                (SELECT COUNT(*) FROM reservations WHERE term_id = t.id AND status = 'pending') as pending_count,
+                (SELECT COUNT(*) FROM reservations WHERE term_id = t.id AND status = 'cancelled') as cancelled_count,
+                (SELECT COUNT(*) FROM reservations WHERE term_id = t.id) as total_reservations
               FROM terms t
               LEFT JOIN sports s ON t.sport_id = s.id
               WHERE t.center_id = $centerId 
@@ -60,8 +70,15 @@ function getAllCenterTerms()
 
     $result = mysqli_query($conn, $query);
 
+    if (!$result) {
+        echo json_encode(['status' => 'error', 'message' => 'Greška u upitu: ' . mysqli_error($conn)]);
+        return;
+    }
+
     $terms = [];
     while ($row = mysqli_fetch_assoc($result)) {
+        $row['is_reserved'] = ($row['approved_count'] > 0);
+        $row['available_spots'] = $row['capacity'] - $row['approved_count'];
         $terms[] = $row;
     }
 
@@ -83,7 +100,6 @@ function getTerm()
     $userId = $_SESSION['user']['id'];
     $termId = isset($_POST['term_id']) ? (int)$_POST['term_id'] : 0;
 
-    // Provera da li termin pripada centru ovog korisnika
     $query = "SELECT t.* 
               FROM terms t
               INNER JOIN sports_centers sc ON t.center_id = sc.id

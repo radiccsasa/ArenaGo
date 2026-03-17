@@ -85,7 +85,24 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-$reservations_query = "SELECT * FROM reservations WHERE user_id = ? ORDER BY created_at DESC";
+// ISPRAVLJEN upit za rezervacije - sa JOIN-ovima
+$reservations_query = "
+    SELECT 
+        r.*,
+        t.date,
+        t.time,
+        t.price,
+        t.action_discount,
+        s.name as sport_type,
+        sc.name as center_name,
+        sc.location
+    FROM reservations r
+    JOIN terms t ON r.term_id = t.id
+    JOIN sports s ON t.sport_id = s.id
+    JOIN sports_centers sc ON t.center_id = sc.id
+    WHERE r.user_id = ?
+    ORDER BY r.created_at DESC
+";
 
 $stmt = $conn->prepare($reservations_query);
 if ($stmt === false) {
@@ -206,7 +223,7 @@ $reservations_result = $stmt->get_result();
             </div>
         </div>
 
-        <!-- Istorija rezervacija (ostaje isto) -->
+        <!-- Istorija rezervacija -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card shadow-sm">
@@ -277,7 +294,7 @@ $reservations_result = $stmt->get_result();
                                                 <td>
                                                     <?php
                                                     switch ($reservation['status'] ?? '') {
-                                                        case 'confirmed':
+                                                        case 'approved':
                                                             echo '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Potvrđeno</span>';
                                                             break;
                                                         case 'pending':
@@ -302,7 +319,7 @@ $reservations_result = $stmt->get_result();
                                 <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
                                 <h5 class="mt-3">Nemate nijednu rezervaciju</h5>
                                 <p class="text-muted">Pregledajte dostupne termine i rezervišite vaš termin.</p>
-                                <a href="../terms/terms.php" class="btn btn-primary">
+                                <a href="../index/index.php" class="btn btn-primary">
                                     <i class="bi bi-search"></i> Pregledaj termine
                                 </a>
                             </div>

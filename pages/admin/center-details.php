@@ -42,7 +42,7 @@ $stats_query = "
         COUNT(DISTINCT t.id) as total_terms,
         COUNT(DISTINCT CASE WHEN t.date >= CURDATE() THEN t.id END) as upcoming_terms,
         COUNT(DISTINCT r.id) as total_reservations,
-        COUNT(DISTINCT CASE WHEN r.status = 'confirmed' THEN r.id END) as confirmed_reservations,
+        COUNT(DISTINCT CASE WHEN r.status = 'confirmed' OR r.status = 'approved' THEN r.id END) as confirmed_reservations,
         COUNT(DISTINCT CASE WHEN r.status = 'pending' THEN r.id END) as pending_reservations,
         COUNT(DISTINCT c.id) as total_comments,
         COUNT(DISTINCT CASE WHEN c.comment_response IS NOT NULL AND c.comment_response != '' THEN c.id END) as responded_comments,
@@ -85,7 +85,7 @@ $terms_query = "
         t.*,
         s.name as sport_name,
         COUNT(r.id) as reservation_count,
-        SUM(CASE WHEN r.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_count
+        SUM(CASE WHEN r.status = 'confirmed' OR r.status = 'approved' THEN 1 ELSE 0 END) as confirmed_count
     FROM terms t
     JOIN sports s ON t.sport_id = s.id
     LEFT JOIN reservations r ON t.id = r.term_id
@@ -261,7 +261,7 @@ $comments_result = $stmt->get_result();
             </div>
         </div>
 
-        <!-- Termini -->
+        <!-- Termini - IZMENJEN DEO -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">
                 <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Termini</h5>
@@ -275,25 +275,32 @@ $comments_result = $stmt->get_result();
                                 <th>Datum</th>
                                 <th>Vreme</th>
                                 <th>Cena</th>
-                                <th>Kapacitet</th>
-                                <th>Rezervacije</th>
-                                <th>Status</th>
+                                <th>Status termina</th>
+                                <th>Zauzetost</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while ($term = $terms_result->fetch_assoc()): ?>
+                            <?php while ($term = $terms_result->fetch_assoc()): 
+                                $confirmed = $term['confirmed_count'] ?? 0;
+                                $hasReservations = ($confirmed > 0);
+                            ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($term['sport_name']); ?></td>
                                     <td><?php echo date('d.m.Y', strtotime($term['date'])); ?></td>
                                     <td><?php echo $term['time']; ?></td>
                                     <td><?php echo number_format($term['price'], 0, ',', '.'); ?> RSD</td>
-                                    <td><?php echo $term['capacity'] ?? 'N/A'; ?></td>
-                                    <td><?php echo $term['confirmed_count']; ?>/<?php echo $term['reservation_count']; ?></td>
                                     <td>
                                         <?php if (strtotime($term['date']) < time()): ?>
                                             <span class="badge bg-secondary">Prošao</span>
                                         <?php else: ?>
                                             <span class="badge bg-success">Aktivan</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($hasReservations): ?>
+                                            <span class="badge bg-danger">Zauzet</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-success">Slobodan</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

@@ -1,28 +1,40 @@
+
 <?php
 function renderTermCard($term) {
-    $sportIcons = [
-        'Fudbal' => 'bi-football',
-        'fudbal' => 'bi-football',
-        'Košarka' => 'bi-basketball',
-        'kosarka' => 'bi-basketball',
-        'Tenis' => 'bi-tennis',
-        'tenis' => 'bi-tennis',
-        'Odbojka' => 'bi-volleyball',
-        'odbojka' => 'bi-volleyball',
-        'Rukomet' => 'bi-handball',
-        'rukomet' => 'bi-handball',
-        'Teretana' => 'bi-dumbbell',
-        'teretana' => 'bi-dumbbell',
-        'Vaterpolo' => 'bi-water',
-        'vaterpolo' => 'bi-water',
-        'Bazen' => 'bi-water',
-        'bazen' => 'bi-water'
-    ];
+    // Provera da li je korisnik ulogovan i da li je običan korisnik
+    $isUser = isset($_SESSION['user']) && $_SESSION['user']['role'] == 'user';
     
     $sportName = $term['sport_name'] ?? $term['sport_type'] ?? 'Sport';
-    $icon = isset($sportIcons[$sportName]) ? $sportIcons[$sportName] : 'bi-trophy';
-    
+    $sportNameClean = strtolower(trim($sportName));
 
+    $sportEmojis = [
+        'Fudbal' => '⚽',
+        'fudbal' => '⚽',
+        'Košarka' => '🏀',
+        'kosarka' => '🏀',
+        'Tenis' => '🎾',
+        'tenis' => '🎾',
+        'Odbojka' => '🏐',
+        'odbojka' => '🏐',
+        'Rukomet' => '🤾',
+        'rukomet' => '🤾',
+        'Teretana' => '🏋️',
+        'teretana' => '🏋️',
+        'Vaterpolo' => '🤽',
+        'vaterpolo' => '🤽',
+        'Bazen' => '🏊',
+        'bazen' => '🏊'
+    ];
+    
+    $icon = '🏆'; // default trophy
+    
+    foreach ($sportEmojis as $key => $value) {
+        if (strpos($sportNameClean, $key) !== false) {
+            $icon = $value;
+            break;
+        }
+    }
+    
     $originalPrice = $term['price'] ?? 0;
     $discount = $term['action_discount'] ?? 0;
     $finalPrice = $originalPrice;
@@ -40,7 +52,7 @@ function renderTermCard($term) {
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="card-title text-primary mb-0"><?php echo htmlspecialchars($term['center_name'] ?? 'Sportski centar'); ?></h5>
                     <span class="badge bg-primary">
-                        <i class="bi <?php echo $icon; ?>"></i> <?php echo htmlspecialchars($sportName); ?>
+                        <?php echo $icon; ?> <?php echo htmlspecialchars($sportName); ?>
                     </span>
                 </div>
                 
@@ -68,9 +80,24 @@ function renderTermCard($term) {
                     </div>
                 </div>
                 
-                <button class="btn btn-primary w-100" onclick="zakaziTermin(<?php echo $term['id'] ?? 0; ?>)">
-                    <i class="bi bi-calendar-check"></i> Zakaži
-                </button>
+                <?php if($isUser): ?>
+                    <!-- Dugme samo za obične korisnike -->
+                    <button class="btn btn-primary w-100" onclick="zakaziTermin(<?php echo $term['id'] ?? 0; ?>)">
+                        <i class="bi bi-calendar-check"></i> Zakaži
+                    </button>
+                <?php else: ?>
+                    <!-- Poruka za neulogovane ili centre -->
+                    <div class="alert alert-secondary text-center py-2 mb-0">
+                        <small>
+                            <i class="bi bi-info-circle"></i> 
+                            <?php if(!isset($_SESSION['user'])): ?>
+                                <a href="/ArenaGo/pages/login/login.php" class="text-decoration-none">Prijavite se</a> da biste zakazali
+                            <?php else: ?>
+                                Samo korisnici mogu zakazati
+                            <?php endif; ?>
+                        </small>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

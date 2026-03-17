@@ -45,6 +45,10 @@ $terms_query = "
     JOIN sports s ON t.sport_id = s.id
     WHERE t.center_id = ?
     AND t.date >= CURDATE() 
+    AND t.id NOT IN (
+        SELECT term_id FROM reservations 
+        WHERE status = 'approved'
+    )
     ORDER BY t.date, t.time
 ";
 $stmt = $conn->prepare($terms_query);
@@ -69,8 +73,28 @@ $stmt->execute();
 $comments_result = $stmt->get_result();
 
 $user_rating = 0;
+$can_comment = false; // Dodato - da li korisnik može da komentariše
+
 if (isset($_SESSION['user']) && $_SESSION['user']['role'] == 'user') {
     $user_id = $_SESSION['user']['id'];
+    
+    // Provera da li korisnik ima potvrđenu rezervaciju za ovaj centar
+    $comment_check = "
+        SELECT COUNT(*) as has_visited 
+        FROM reservations r
+        JOIN terms t ON r.term_id = t.id
+        WHERE t.center_id = ? 
+        AND r.user_id = ? 
+        AND r.status = 'approved'
+    ";
+    $stmt = $conn->prepare($comment_check);
+    $stmt->bind_param("ii", $center_id, $user_id);
+    $stmt->execute();
+    $comment_result = $stmt->get_result();
+    $comment_data = $comment_result->fetch_assoc();
+    $can_comment = ($comment_data['has_visited'] > 0);
+    
+    // Provera ocene (ostaje isto)
     $rating_check = "SELECT rating FROM ratings WHERE center_id = ? AND user_id = ?";
     $stmt = $conn->prepare($rating_check);
     $stmt->bind_param("ii", $center_id, $user_id);
@@ -206,15 +230,25 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
                                     </div>
 
                                     <h5 class="mb-3">Dodaj komentar</h5>
-                                    <form id="commentForm">
-                                        <input type="hidden" name="center_id" value="<?php echo $center_id; ?>">
-                                        <div class="mb-3">
-                                            <textarea name="comment" class="form-control" rows="3" placeholder="Vaš komentar..." required></textarea>
+                                    
+                                    <?php if ($can_comment): ?>
+                                        <!-- Forma za komentarisanje - samo ako je korisnik imao potvrđenu rezervaciju -->
+                                        <form id="commentForm">
+                                            <input type="hidden" name="center_id" value="<?php echo $center_id; ?>">
+                                            <div class="mb-3">
+                                                <textarea name="comment" class="form-control" rows="3" placeholder="Vaš komentar..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="bi bi-chat"></i> Postavi komentar
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <!-- Poruka ako korisnik nema pravo da komentariše -->
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> 
+                                            Samo korisnici koji su imali potvrđenu rezervaciju u ovom centru mogu da komentarišu.
                                         </div>
-                                        <button type="submit" class="btn btn-primary w-100">
-                                            <i class="bi bi-chat"></i> Postavi komentar
-                                        </button>
-                                    </form>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -286,27 +320,40 @@ $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
     <script>
         // Funkcija za zakazivanje termina
         function zakaziTermin(termId) {
-            <?php if (!isset($_SESSION['user'])): ?>
-                if (confirm('Morate biti prijavljeni da biste zakazali termin. Idite na login?')) {
-                    window.location.href = '/ArenaGo/pages/login/login.php';
-                }
-            <?php else: ?>
-                $.ajax({
-                    url: '../../api/zakazi-termin.php',
-                    method: 'POST',
-                    data: {
-                        term_id: termId
-                    },
-                    success: function(response) {
-                        showToast('Termin je uspešno zakazan! Čeka potvrdu centra.');
-                        location.reload();
-                    },
-                    error: function() {
-                        showToast('Došlo je do greške prilikom zakazivanja.', "error");
-                    }
-                });
-            <?php endif; ?>
+    <?php if (!isset($_SESSION['user'])): ?>
+        if (confirm('Morate biti prijavljeni da biste zakazali termin. Idite na login?')) {
+            window.location.href = '/ArenaGo/pages/login/login.php';
         }
+    <?php else: ?>
+        $.ajax({
+            url: '../../api/reservationApi.php',
+            method: 'POST',
+            data: {
+                termId: termId,
+                methodName: 'reserve'
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.status === 'success') {
+                    showToast('Termin je uspešno zakazan! Čeka potvrdu centra.', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(response.message || 'Došlo je do greške', 'error');
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Došlo je do greške prilikom zakazivanja.';
+                try {
+                    let response = JSON.parse(xhr.responseText);
+                    errorMsg = response.message || errorMsg;
+                } catch(e) {}
+                showToast(errorMsg, 'error');
+            }
+        });
+    <?php endif; ?>
+}
 
         // Funkcije za ocenjivanje
         function rateCenter(centerId, rating) {

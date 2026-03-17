@@ -110,6 +110,7 @@ $comments = $stmt->get_result();
             </div>
         </div>
 
+        <!-- Rezervacije korisnika - IZMENJEN DEO -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">
                 <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Rezervacije korisnika</h5>
@@ -140,18 +141,33 @@ $comments = $stmt->get_result();
                                         <td><?php echo number_format($res['price'], 0, ',', '.'); ?> RSD</td>
                                         <td>
                                             <?php
-                                            switch ($res['status']) {
+                                            $status = $res['status'] ?? '';
+                                            $statusBadge = '';
+                                            $statusText = '';
+                                            
+                                            switch ($status) {
+                                                case 'approved':
                                                 case 'confirmed':
-                                                    echo '<span class="badge bg-success">Potvrđeno</span>';
+                                                    $statusBadge = 'bg-success';
+                                                    $statusText = 'Odobreno';
                                                     break;
                                                 case 'pending':
-                                                    echo '<span class="badge bg-warning">Na čekanju</span>';
+                                                    $statusBadge = 'bg-warning text-dark';
+                                                    $statusText = 'Na čekanju';
                                                     break;
                                                 case 'cancelled':
-                                                    echo '<span class="badge bg-danger">Otkazano</span>';
+                                                case 'rejected':
+                                                    $statusBadge = 'bg-danger';
+                                                    $statusText = 'Otkazano';
                                                     break;
+                                                default:
+                                                    $statusBadge = 'bg-secondary';
+                                                    $statusText = 'Nepoznato';
                                             }
                                             ?>
+                                            <span class="badge <?php echo $statusBadge; ?>">
+                                                <?php echo $statusText; ?>
+                                            </span>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
@@ -164,6 +180,7 @@ $comments = $stmt->get_result();
             </div>
         </div>
 
+        <!-- Komentari korisnika -->
         <div class="card shadow-sm">
             <div class="card-header bg-white">
                 <h5 class="mb-0"><i class="bi bi-chat"></i> Komentari korisnika</h5>

@@ -29,12 +29,36 @@ function reserve()
     $termId = $_POST['termId'];
     $userId = $_SESSION['user']['id'];
 
+    $approved_check = "SELECT id FROM reservations WHERE term_id = $termId AND status = 'approved'";
+    $approved_result = mysqli_query($conn, $approved_check);
+    
+    if (mysqli_num_rows($approved_result) > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Ovaj termin je već rezervisan od strane drugog korisnika'
+        ]);
+        return;
+    }
+
+    $check_query = "SELECT id FROM reservations WHERE term_id = $termId AND user_id = $userId";
+    $check_result = mysqli_query($conn, $check_query);
+    
+    if (mysqli_num_rows($check_result) > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Već ste poslali zahtev za zakazivanje, molim vas sacekajte.'
+        ]);
+        return;
+    }
+
+    // Ako nema rezervacije, onda insertuj
     $query = "INSERT INTO reservations (term_id, user_id, status, created_at) 
         VALUES ($termId, $userId, 'pending', NOW());";
 
     if (mysqli_query($conn, $query)) {
         echo json_encode([
-            'status' => 'success'
+            'status' => 'success',
+            'message' => 'Uspešno rezervisan termin'
         ]);
     } else {
         echo json_encode([

@@ -33,6 +33,10 @@ $terms_query = "
     JOIN sports s ON t.sport_id = s.id
     WHERE 1=1
     AND t.date >= CURDATE()
+    AND t.id NOT IN (
+        SELECT term_id FROM reservations 
+        WHERE status = 'approved'
+    )
 ";
 
 $params = [];
